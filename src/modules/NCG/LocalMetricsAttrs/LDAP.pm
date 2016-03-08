@@ -183,12 +183,14 @@ sub getData {
             if ($entry->get_value('GlueCEUniqueID') && $entry->get_value('GlueCEUniqueID') =~ /([-_.A-Za-z0-9]+):(\d+)\/(cream-([-_.A-Za-z0-9]+?)-([-_.A-Za-z0-9]+))$/) {
                 $hostname = $1;
                 $port = $2;
-                my $cream_queue = $3;
+                my $cream_lrms = $4;
+                my $cream_queue = $5;
                 $self->{SITEDB}->hostAttribute($hostname, "CREAM_PORT", $port);
                 
                 foreach my $attr ($entry->get_value('GlueCEAccessControlBaseRule')) {
                     if ($attr =~ /VO:(.*)/) {
                         my $voname = lc($1);
+                        $self->{SITEDB}->hostAttributeVO($hostname, "CREAM_LRMS", $voname, $cream_lrms);
                         $self->{SITEDB}->hostAttributeVO($hostname, "CREAM_QUEUE", $voname, $cream_queue);
                     }
                 }

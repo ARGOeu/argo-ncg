@@ -428,8 +428,8 @@ $WLCG_SERVICE->{'org.egee.SendToMsg'}->{config}->{retryInterval} = 2;
 $WLCG_SERVICE->{'org.egee.SendToMsg'}->{config}->{maxCheckAttempts} = 4;
 $WLCG_SERVICE->{'org.egee.SendToMsg'}->{config}->{path} = $NCG::NCG_PLUGINS_PATH_GRIDMON;
 $WLCG_SERVICE->{'org.egee.SendToMsg'}->{flags}->{NOHOSTNAME} = 1;
-$WLCG_SERVICE->{'org.egee.SendToMsg'}->{flags}->{NOARGS} = 1;
 $WLCG_SERVICE->{'org.egee.SendToMsg'}->{flags}->{PNP} = 1;
+$WLCG_SERVICE->{'org.egee.SendToMsg'}->{parameter}->{'--persistent'} = '';
 
 $WLCG_SERVICE->{'org.egee.RecvFromQueue'}->{probe} = "recv_from_queue";
 $WLCG_SERVICE->{'org.egee.RecvFromQueue'}->{config}->{timeout} = 120;
@@ -529,7 +529,7 @@ $WLCG_SERVICE->{'hr.srce.GoodCEs'}->{attribute}->{VONAME} = "--vo";
 $WLCG_SERVICE->{'hr.srce.GoodCEs'}->{attribute}->{VO_FQAN} = "--vo-fqan";
 $WLCG_SERVICE->{'hr.srce.GoodCEs'}->{parameter}->{'--dir'} = '/var/lib/gridprobes';
 $WLCG_SERVICE->{'hr.srce.GoodCEs'}->{parameter}->{'--file'} = 'GoodCEs';
-$WLCG_SERVICE->{'hr.srce.GoodCEs'}->{parameter}->{"--metric"} = 'emi.cream.CREAMCE-JobSubmit';
+$WLCG_SERVICE->{'hr.srce.GoodCEs'}->{parameter}->{"--metric"} = 'emi.cream.CREAMCE-JobPurge';
 
 # GoodSEs for CE-JobState and WN-RepRep
 
@@ -626,12 +626,6 @@ $WLCG_NODETYPE->{internal}->{"NAGIOS"} = [
 'org.nagios.ProcessNpcd',
 'org.nagios.ProcessNSCA', # (if NRPE_UI is set)
 'org.egee.ImportGocdbDowntimes',
-'org.egee.SendToMetricStore', # (if LOCAL_METRIC_STORE)
-'org.egee.ATPSync', # (if LOCAL_METRIC_STORE)
-'ch.cern.sam.POEMSync', # (if LOCAL_METRIC_STORE)
-'ch.cern.sam.MrsCheckSpool',
-'ch.cern.sam.MrsCheckDBInserts',
-'org.nagios.MrsDirSize', # (if LOCAL_METRIC_STORE)
 'hr.srce.GridProxy-Valid', # (if INCLUDE_PROXY_CHECKS && local, NRPE)
 'hr.srce.GridProxy-Get', # (if INCLUDE_PROXY_CHECKS && local, NRPE)
 
@@ -646,12 +640,7 @@ $WLCG_NODETYPE->{internal}->{"NAGIOS"} = [
 'org.nagiosexchange.LogFiles',
 'org.nagios.NagiosCmdFile',
 'org.nagiosexchange.NCGLogFiles',
-'emi.cream.CREAMCE-JobMonit',
-'emi.cream.CREAMCE-DirectJobMonit',
-'emi.cream.glexec.CREAMCE-JobMonit',
 'emi.wms.WMS-JobMonit',
-'eu.egi.mpi.simplejob.CREAMCE-JobMonit',
-'eu.egi.mpi.complexjob.CREAMCE-JobMonit',
 'org.nordugrid.ARC-CE-monitor',
 'org.nordugrid.ARC-CE-clean',
 ];

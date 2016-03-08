@@ -25,8 +25,8 @@ use JSON;
 
 @ISA=("NCG::LocalMetrics");
 
-my $DEFAULT_POEM_ROOT_URL = "http://localhost/poem_sync";
-my $DEFAULT_POEM_ROOT_URL_SUFFIX = "/api/0.1/json/metricinstances/";
+my $DEFAULT_POEM_ROOT_URL = "http://mon.egi.eu/poem";
+my $DEFAULT_POEM_ROOT_URL_SUFFIX = "/api/0.2/json/profiles";
 
 sub new
 {
@@ -41,6 +41,13 @@ sub new
         $self->error("Metric configuration is not defined. Unable to generate configuration.");
         return;
     }
+
+    if ($self->{POEM_PROFILES}) {
+        foreach my $pt (split (/,/, $self->{POEM_PROFILES})) {
+            $self->{PROFILES_HASH}->{$pt} = 1;
+        }
+    }
+
 
     $self;
 }
@@ -102,16 +109,19 @@ sub getData {
 
     # Load (service, metric) tuples
     if ($jsonRef && ref $jsonRef eq "ARRAY") {
-        foreach my $metricTuple (@{$jsonRef}) {
-            my $service = $metricTuple->[1];
-            my $metric = $metricTuple->[0];
-            my $vo = $metricTuple->[2];
-            my $voFqan = $metricTuple->[3] || '_ALL_';
+        foreach my $profileTuple (@{$jsonRef}) {
+            next if ( defined ($self->{PROFILES_HASH}) && ! exists $self->{PROFILES_HASH}->{$profileTuple->{name}});
+            foreach my $metricTuple (@{$profileTuple->{metric_instances}}) {
+                my $service = $metricTuple->{atp_service_type_flavour};
+                my $metric = $metricTuple->{metric};
+                my $vo = $metricTuple->{vo};
+                my $voFqan = $metricTuple->{fqan} || '_ALL_';
             
-            unless (exists $self->{METRIC_CONFIG}->{$metric}) {
-                $self->error("Metric configuration does not contain metric $metric. Metric will be skipped.");
-            } else {
-                $poemService->{$service}->{$metric}->{$vo}->{$voFqan} = 1;
+                unless (exists $self->{METRIC_CONFIG}->{$metric}) {
+                    $self->error("Metric configuration does not contain metric $metric. Metric will be skipped.");
+                } else {
+                    $poemService->{$service}->{$metric}->{$vo}->{$voFqan} = 1;
+                }
             }
         }
     }

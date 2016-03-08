@@ -28,8 +28,8 @@ use vars qw(@ISA);
 
 @ISA=("NCG::ConfigGen");
 
-my $DEFAULT_TEMPLATES_DIR = '/usr/share/grid-monitoring/config-gen/nagios';
-my $DEFAULT_OUTPUT_DIR = '/etc/nagios/wlcg.d';
+my $DEFAULT_TEMPLATES_DIR = '/usr/share/argo-ncg/templates';
+my $DEFAULT_OUTPUT_DIR = '/etc/nagios/argo-ncg.d';
 my $DEFAULT_NRPE_OUTPUT_DIR = '/etc/nagios';
 
 my $DEFAULT_WLCG_PLUGINS_DIR = '/usr/libexec/grid-monitoring/plugins/nagios';
@@ -2520,7 +2520,7 @@ configuration in case when existing Nagios server is used:
   use NCG::ConfigGen::Nagios;
 
   my $ncg = NCG::ConfigGen::Nagios->new( { SITEDB=> $sitedb,
-                                           OUTPUT_DIR=>'/etc/nagios/wlcg.d' } );
+                                           OUTPUT_DIR=>'/etc/nagios/argo-ncg.d' } );
 
   $ncg->getData();
 
@@ -2687,7 +2687,7 @@ reference that can contain following elements:
   (default: /etc/nagios)
 
   OUTPUT_DIR - path where to write configuration.
-  (default: /etc/nagios/wlcg.d)
+  (default: /etc/nagios/argo-ncg.d)
 
   PROBES_TYPE - which probes to include in configuration.
                 Possible values:

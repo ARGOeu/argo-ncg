@@ -1,5 +1,0 @@
-define contactgroup{
-        contactgroup_name               <groupname>
-        alias                           <groupname>
-}
-
