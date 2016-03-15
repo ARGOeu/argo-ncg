@@ -6,7 +6,7 @@
 Summary: ARGO Nagios config generator
 Name: argo-ncg
 Version: 0.1.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: ASL 2.0
 Group: Network/Monitoring
 Source0: %{name}-%{version}.tar.gz
@@ -32,7 +32,6 @@ install --directory $RPM_BUILD_ROOT%{_sbindir}
 install --directory $RPM_BUILD_ROOT/usr/libexec
 install --mode=755 ncg.pl $RPM_BUILD_ROOT%{_sbindir}
 install --mode=755 ncg.reload.sh $RPM_BUILD_ROOT%{_sbindir}
-install --mode=755 hashlocal-to-json.pl $RPM_BUILD_ROOT/usr/libexec
 #
 # Config
 #
@@ -83,7 +82,6 @@ rm -rf $RPM_BUILD_ROOT
 %{configdir}/check_logfiles_ncg.conf
 %{_sbindir}/ncg.pl
 %{_sbindir}/ncg.reload.sh
-/usr/libexec/hashlocal-to-json.pl
 %{perllib}/NCG.pm
 %{perllib}/NCG/
 %{templatedir}/
@@ -96,5 +94,7 @@ if [ -f /etc/init.d/ncg ] ; then
 fi
 
 %changelog
-* Tue Mar 8 2018 Emir Imamagic <eimamagi@srce.hr> - 0.1.0-1
+* Tue Mar 15 2016 Emir Imamagic <eimamagi@srce.hr> - 0.1.0-2
+- Removed hashlocal-to-json.pl from RPM
+* Tue Mar 8 2016 Emir Imamagic <eimamagi@srce.hr> - 0.1.0-1
 - Initial build for ARGO Monitoring Engine
