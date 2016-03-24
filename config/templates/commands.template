@@ -97,12 +97,12 @@ define command{
 
 define command {
         command_name handle_service_check
-        command_line <WLCG_PLUGINS_DIR>/eventhandlers/handle_service_check  --role=<NAGIOS_ROLE> --local-metric-store=<LOCAL_METRIC_STORE> --send-to-msg=<SEND_TO_MSG>
+        command_line /usr/libexec/argo-msg-nagios/handle_service_check  --role=<NAGIOS_ROLE> --tenant=<TENANT> --send-to-msg=<SEND_TO_MSG>
 }
 
 define command {
         command_name ncg-notify-by-msg
-        command_line <WLCG_PLUGINS_DIR>/eventhandlers/handle_service_change  --role=<NAGIOS_ROLE> <SEND_TO_DASHBOARD> <GGUS_SERVER_FQDN>
+        command_line /usr/libexec/argo-msg-nagios/handle_service_change  --role=<NAGIOS_ROLE> <SEND_TO_DASHBOARD>
 }
 
 #####

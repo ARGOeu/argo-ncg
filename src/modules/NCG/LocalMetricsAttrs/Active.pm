@@ -30,8 +30,6 @@ sub new {
     my $class  = ref($proto) || $proto;
     my $self =  $class->SUPER::new(@_);
 
-    $self->{LOCAL_METRIC_STORE} = 0
-        unless (defined $self->{LOCAL_METRIC_STORE});
     $self->{INCLUDE_MSG_CHECKS_RECV} = 1
         unless (defined $self->{INCLUDE_MSG_CHECKS_RECV});
     $self->{INCLUDE_MSG_CHECKS_SEND} = 1
@@ -109,13 +107,6 @@ sub _analyzeNAGIOS {
     if ($self->{SITEDB}->hasService($hostname, "NAGIOS")) {
         # NRPE service
         $self->{SITEDB}->removeMetric($hostname, undef, "org.nagios.ProcessNSCA") if (!$self->{NRPE_UI});
-        # local metric store checks
-        if (!$self->{LOCAL_METRIC_STORE}) {
-            $self->{SITEDB}->removeMetric($hostname, undef, "org.egee.SendToMetricStore");
-            $self->{SITEDB}->removeMetric($hostname, undef, "ch.cern.sam.POEMSync");
-            $self->{SITEDB}->removeMetric($hostname, undef, "org.egee.ATPSync");
-            $self->{SITEDB}->removeMetric($hostname, undef, "org.egee.MrsDirSize");
-        }
         # let's gather list of sites
         # needed for remote metrics and GOCDB downtimes
         my $siteList = join ( ',', keys %{$self->{MULTI_SITE_SITES}});
@@ -535,10 +526,6 @@ reference that can contain following elements:
   send results to the rest of the world over MSG.
   (default: true)
 
-  LOCAL_METRIC_STORE - if true configuration for storing results to
-  local metric store.
-  (default: false)
-  
   INCLUDE_PROXY_CHECKS - if true configuration for proxy generation
   will be generated. Set this option to 0 if there are no probes which
   require valid proxy certificate.

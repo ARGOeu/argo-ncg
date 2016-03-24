@@ -5,8 +5,8 @@
 
 Summary: ARGO Nagios config generator
 Name: argo-ncg
-Version: 0.1.0
-Release: 2%{?dist}
+Version: 0.2.0
+Release: 1%{?dist}
 License: ASL 2.0
 Group: Network/Monitoring
 Source0: %{name}-%{version}.tar.gz
@@ -36,13 +36,15 @@ install --mode=755 ncg.reload.sh $RPM_BUILD_ROOT%{_sbindir}
 # Config
 #
 install --directory $RPM_BUILD_ROOT%{configdir}/ncg.conf.d/
-install --directory $RPM_BUILD_ROOT%{configdir}/
+install --directory $RPM_BUILD_ROOT%{configdir}/ncg-localdb.d/
 install ncg.conf $RPM_BUILD_ROOT%{configdir}
 install ncg.conf.example $RPM_BUILD_ROOT%{configdir}
 install ncg.localdb $RPM_BUILD_ROOT%{configdir}
 install ncg.localdb.example $RPM_BUILD_ROOT%{configdir}
 install check_logfiles_ncg.conf $RPM_BUILD_ROOT%{configdir}
 install --directory $RPM_BUILD_ROOT/etc/nagios/argo-ncg.d
+install --directory $RPM_BUILD_ROOT/etc/nagios/globus
+
 cp -r unicore $RPM_BUILD_ROOT/etc/nagios
 install --mode=644 ncg-metric-config.conf $RPM_BUILD_ROOT/etc
 cp -r ncg-metric-config.d $RPM_BUILD_ROOT/etc
@@ -73,6 +75,7 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %{configdir}/ncg.localdb
 %config(noreplace) %{configdir}/ncg.conf.example
 %config(noreplace) %{configdir}/ncg.localdb.example
+%config(noreplace) %{configdir}/ncg-localdb.d
 %config(noreplace) /etc/nagios/argo-ncg.d
 %config(noreplace) /etc/nagios/unicore/log4j-ucc.properties
 %config(noreplace) /etc/nagios/unicore/log4j-ucc-debug.properties
@@ -86,6 +89,7 @@ rm -rf $RPM_BUILD_ROOT
 %{perllib}/NCG/
 %{templatedir}/
 %dir %attr(0770,nagios,nagios) /var/run/argo-ncg
+%config(noreplace) %attr(0770,nagios,nagios) /etc/nagios/globus
 
 %pre
 if [ -f /etc/init.d/ncg ] ; then
@@ -94,6 +98,14 @@ if [ -f /etc/init.d/ncg ] ; then
 fi
 
 %changelog
+* Thu Mar 24 2016 Emir Imamagic <eimamagi@srce.hr> - 0.2.0-1
+- Added config directories globus and ncg-localdb.d to package
+- Removed obsolete failure_prediction_enabled
+- Added TENANT option
+- CREAM-CE test configurations
+- Modified argo tests probe locations
+- Added NCG_TIMEOUT to ncg.reload.sh
+- Removed LOCAL_METRIC_STORE option
 * Tue Mar 15 2016 Emir Imamagic <eimamagi@srce.hr> - 0.1.0-2
 - Removed hashlocal-to-json.pl from RPM
 * Tue Mar 8 2016 Emir Imamagic <eimamagi@srce.hr> - 0.1.0-1

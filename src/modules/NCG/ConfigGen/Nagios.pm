@@ -39,7 +39,7 @@ my $DEFAULT_MYPROXY_NAME = 'NagiosRetrieve';
 my $DEFAULT_MYPROXY_USER = 'nagios';
 my $DEFAULT_NAGIOS_USER = 'nagios';
 my $DEFAULT_VO = 'dteam';
-my $DEFAULT_NOTIFICATION_HEADER = 'SAM Nagios';
+my $DEFAULT_NOTIFICATION_HEADER = 'ARGO-MON';
 
 my $PNP_ACTION_URL = '/nagios/html/pnp4nagios/index.php?host=$HOSTNAME$&srv=$SERVICEDESC$';
 
@@ -121,8 +121,6 @@ sub new
         if (!defined $self->{ENABLE_NOTIFICATIONS} && ! defined $self->{SEND_TO_EMAIL});
     $self->{ENABLE_FLAP_DETECTION} = $DEFAULT_ENABLE_FLAP_DETECTION
         unless (defined $self->{ENABLE_FLAP_DETECTION});
-    $self->{LOCAL_METRIC_STORE} = 0
-        unless (defined $self->{LOCAL_METRIC_STORE});
     $self->{SEND_TO_MSG} = 1
         unless (defined $self->{SEND_TO_MSG});
     $self->{HOST_NOTIFICATIONS_OPTIONS} = "d,r"
@@ -131,6 +129,11 @@ sub new
         unless (defined $self->{SERVICE_NOTIFICATIONS_OPTIONS});
     $self->{VO_HOST_FILTER} = $DEFAULT_VO_HOST_FILTER
         unless (defined $self->{VO_HOST_FILTER});
+
+    if (!$self->{TENANT}) {
+        $self->error("Tenant name is not defined. Unable to generate nagios commands configuration.");
+            return;
+    }
 
     if ($self->{MULTI_SITE_GLOBAL}) {
         if (! defined $self->{MULTI_SITE_SITES}) {
@@ -468,11 +471,7 @@ sub _genCommands {
     }
 
     my $sendToDashboard='';
-    my $ggusServerFqdn='';
 
-    if ($self->{GGUS_SERVER_FQDN}) {
-        $ggusServerFqdn = "--ggus-server $self->{GGUS_SERVER_FQDN}";
-    }
     if ($self->{SEND_TO_DASHBOARD}) {
         $sendToDashboard = "--send-to-dashboard";
     }
@@ -483,10 +482,9 @@ sub _genCommands {
         $line =~ s/<NAGIOS_ROLE>/$self->{NAGIOS_ROLE}/g;
         $line =~ s/<NOTIFICATION_HEADER>/$self->{NOTIFICATION_HEADER}/g;
         $line =~ s/<NAGIOS_SERVER>/$self->{NAGIOS_SERVER}/g;
-        $line =~ s/<LOCAL_METRIC_STORE>/$self->{LOCAL_METRIC_STORE}/g;
         $line =~ s/<SEND_TO_DASHBOARD>/$sendToDashboard/g;
-        $line =~ s/<GGUS_SERVER_FQDN>/$ggusServerFqdn/g;
         $line =~ s/<SEND_TO_MSG>/$self->{SEND_TO_MSG}/g;
+        $line =~ s/<TENANT>/$self->{TENANT}/g;
         print $CONFIG $line;
     }
 
@@ -2594,10 +2592,6 @@ reference that can contain following elements:
   will be generated.
   (default: false)
 
-  LOCAL_METRIC_STORE - if true configuration for storing results to
-  local metric store.
-  (default: false)
-
   MULTI_SITE_GLOBAL - if true only global configuration for multisite
   will be generated. Global configuration consists of:
     - commands definitions (commands.cfg)
@@ -2671,7 +2665,7 @@ reference that can contain following elements:
 
   NOTIFICATION_HEADER - header which will be set in subject of notification
   emails (e.g. [SAM Nagios] ....)
-  (default: SAM Nagios)
+  (default: ARGO-MON)
 
   NRPE_UI - set to address of remote UI server which is used to run
   local probes.
