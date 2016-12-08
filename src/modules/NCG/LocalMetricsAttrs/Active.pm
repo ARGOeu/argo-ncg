@@ -351,28 +351,42 @@ sub _analyzeURLs {
     }
 
     if ($attr = $self->{SITEDB}->hostAttribute($hostname, "eu.egi.cloud.vm-management.occi_URL")) {
-        eval {
-            my $occiHash = {};
-            my $occiurl = url($attr);
-            $self->{SITEDB}->hostAttribute($hostname, 'OCCI_PORT', $occiurl->port);
-            my @params = $occiurl->query_form;
-            for (my $i=0; $i < @params; $i++) {
-                my $key = $params[$i++];
-                $key =~ s/^amp;//i;
-                $key = 'OCCI_' . uc($key);
-                my $value = $params[$i];
-                $self->{SITEDB}->hostAttribute($hostname, $key, $value);
-                $occiHash->{$key} = $value;
-            }
-            $self->{SITEDB}->hostAttribute($hostname, 'OCCI_SCHEME', $occiurl->scheme);
-            $self->{SITEDB}->hostAttribute($hostname, 'OCCI_URL', $occiurl->scheme."://".$occiurl->host.":".$occiurl->port);
+        eval {my $occiHash = {};
+        my $occiurl = url($attr);
+        $self->{SITEDB}->hostAttribute($hostname, 'OCCI_PORT', $occiurl->port);
+        my @params = $occiurl->query_form;
+        for (my $i=0; $i < @params; $i++) {
+            my $key = $params[$i++];
+            $key =~ s/^amp;//i;
+            $key = 'OCCI_' . uc($key);
+            my $value = $params[$i];
+            $self->{SITEDB}->hostAttribute($hostname, $key, $value);
+            $occiHash->{$key} = $value;
+        }
+        $self->{SITEDB}->hostAttribute($hostname, 'OCCI_SCHEME', $occiurl->scheme);
+        $self->{SITEDB}->hostAttribute($hostname, 'OCCI_URL', $occiurl->scheme."://".$occiurl->host.":".$occiurl->port.$occiurl->epath);
+        if (!exists $occiHash->{OCCI_RESOURCE}) {
             if (!exists $occiHash->{OCCI_PLATFORM}) {
                 $self->{SITEDB}->hostAttribute($hostname, 'OCCI_RESOURCE', 'small');
             } else {
-                if (!exists $occiHash->{OCCI_RESOURCE}) {
-                    $self->{SITEDB}->hostAttribute($hostname, 'OCCI_RESOURCE', 'm1-tiny');
-                }
+                $self->{SITEDB}->hostAttribute($hostname, 'OCCI_RESOURCE', 'm1-tiny');
             }
+        }};
+    }
+    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "org.openstack.nova_URL")) {
+        eval {
+        my $occiurl = url($attr);
+        $self->{SITEDB}->hostAttribute($hostname, 'OS_KEYSTONE_PORT', $occiurl->port);
+        $self->{SITEDB}->hostAttribute($hostname, 'OS_KEYSTONE_HOST', $occiurl->host);
+        my @params = $occiurl->query_form;
+        for (my $i=0; $i < @params; $i++) {
+            my $key = $params[$i++];
+            $key =~ s/^amp;//i;
+            $key = 'OS_' . uc($key);
+            my $value = $params[$i];
+            $self->{SITEDB}->hostAttribute($hostname, $key, $value);
+        }
+        $self->{SITEDB}->hostAttribute($hostname, 'OS_KEYSTONE_URL', $occiurl->scheme."://".$occiurl->host.":".$occiurl->port.$occiurl->epath);
         };
     }
     if ($attr = $self->{SITEDB}->hostAttribute($hostname, "eu.egi.cloud.storage-management.cdmi_URL")) {

@@ -5,7 +5,7 @@
 
 Summary: ARGO Nagios config generator
 Name: argo-ncg
-Version: 0.2.1
+Version: 0.2.2
 Release: 1%{?dist}
 License: ASL 2.0
 Group: Network/Monitoring
@@ -107,6 +107,8 @@ if [ -f /etc/init.d/ncg ] ; then
 fi
 
 %changelog
+* Thu Dec 8 2016 Emir Imamagic <eimamagi@srce.hr> - 0.2.2-1
+- Changes from ARGO central instances
 * Fri Jul 29 2016 Emir Imamagic <eimamagi@srce.hr> - 0.2.1-1
 - Added UNICORE scripts for credential management
 * Thu Mar 24 2016 Emir Imamagic <eimamagi@srce.hr> - 0.2.0-1
