@@ -180,13 +180,12 @@ sub getData {
         $self->verbose("Could not fetch CREAM CE info from LDAP: ".$mesg->error);
     } else {
         foreach $entry ($mesg->entries()) {
-            if ($entry->get_value('GlueCEUniqueID') && $entry->get_value('GlueCEUniqueID') =~ /([-_.A-Za-z0-9]+):(\d+)\/(cream-([-_.A-Za-z0-9]+?)-([-_.A-Za-z0-9]+))$/) {
+            if ($entry->get_value('GlueCEUniqueID') && $entry->get_value('GlueCEUniqueID') =~ /([-_.A-Za-z0-9]+):(\d+)\/(cream-([-_.A-Za-z0-9]+?)-([-_.A-Za-z0-9@]+))$/) {
                 $hostname = $1;
                 $port = $2;
                 my $cream_lrms = $4;
                 my $cream_queue = $5;
                 $self->{SITEDB}->hostAttribute($hostname, "CREAM_PORT", $port);
-                
                 foreach my $attr ($entry->get_value('GlueCEAccessControlBaseRule')) {
                     if ($attr =~ /VO:(.*)/) {
                         my $voname = lc($1);

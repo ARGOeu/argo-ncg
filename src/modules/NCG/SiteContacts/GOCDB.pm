@@ -125,7 +125,7 @@ sub getData {
     $ENV{HTTPS_CERT_FILE} = $self->{X509_CERT};
     $ENV{HTTPS_CA_DIR} = '/etc/grid-security/certificates';
 
-    my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1);
+    my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy => 1, ssl_opts => { SSL_key_file => $self->{X509_KEY}, SSL_cert_file => $self->{X509_CERT} });
     $ua->agent('NCG::SiteContacts::GOCDB');
 
     my $url = $self->{GOCDB_ROOT_URL} . $self->{GOCDB_GET_METHOD};

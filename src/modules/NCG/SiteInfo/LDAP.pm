@@ -173,7 +173,7 @@ sub getData {
                         $self->{SITEDB}->addVO($hostname, "CE", $voname);
                     }
                 }
-            } elsif ($entry->get_value('GlueCEUniqueID') && $entry->get_value('GlueCEUniqueID') =~ /([-_.A-Za-z0-9]+):(\d+)\/(cream)-([-_.A-Za-z0-9]+?)-([-_.A-Za-z0-9]+)/) {
+            } elsif ($entry->get_value('GlueCEUniqueID') && $entry->get_value('GlueCEUniqueID') =~ /([-_.A-Za-z0-9]+):(\d+)\/(cream)-([-_.A-Za-z0-9]+?)-([-_.A-Za-z0-9@]+)/) {
                 $hostname = $1;
                 $self->{SITEDB}->addHost($hostname) if ($self->{ADD_HOSTS});
                 $self->{SITEDB}->addService($hostname, "CREAM-CE");
