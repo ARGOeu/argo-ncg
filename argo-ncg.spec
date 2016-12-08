@@ -5,7 +5,7 @@
 
 Summary: ARGO Nagios config generator
 Name: argo-ncg
-Version: 0.2.0
+Version: 0.2.1
 Release: 1%{?dist}
 License: ASL 2.0
 Group: Network/Monitoring
@@ -13,6 +13,7 @@ Source0: %{name}-%{version}.tar.gz
 Obsoletes: grid-monitoring-config-gen-nagios grid-monitoring-config-gen ncg-metric-config
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
+Requires: perl-libwww-perl > 5.833-2
 
 %description
 (NULL)
@@ -29,9 +30,12 @@ rm -rf $RPM_BUILD_ROOT
 # App
 #
 install --directory $RPM_BUILD_ROOT%{_sbindir}
-install --directory $RPM_BUILD_ROOT/usr/libexec
+install --directory $RPM_BUILD_ROOT/usr/libexec/%{name}
 install --mode=755 ncg.pl $RPM_BUILD_ROOT%{_sbindir}
 install --mode=755 ncg.reload.sh $RPM_BUILD_ROOT%{_sbindir}
+install --mode=755 argo-unicore-keystore.sh $RPM_BUILD_ROOT/usr/libexec/%{name}
+install --mode=755 argo-unicore-truststore.sh $RPM_BUILD_ROOT/usr/libexec/%{name}
+
 #
 # Config
 #
@@ -85,6 +89,11 @@ rm -rf $RPM_BUILD_ROOT
 %{configdir}/check_logfiles_ncg.conf
 %{_sbindir}/ncg.pl
 %{_sbindir}/ncg.reload.sh
+/usr/libexec/%{name}/argo-unicore-keystore.sh
+/usr/libexec/%{name}/argo-unicore-truststore.sh
+install --mode=755 argo-unicore-keystore.sh $RPM_BUILD_ROOT/usr/libexec/%{name}
+install --mode=755 argo-unicore-truststore.sh $RPM_BUILD_ROOT/usr/libexec/%{name}
+
 %{perllib}/NCG.pm
 %{perllib}/NCG/
 %{templatedir}/
@@ -98,6 +107,8 @@ if [ -f /etc/init.d/ncg ] ; then
 fi
 
 %changelog
+* Fri Jul 29 2016 Emir Imamagic <eimamagi@srce.hr> - 0.2.1-1
+- Added UNICORE scripts for credential management
 * Thu Mar 24 2016 Emir Imamagic <eimamagi@srce.hr> - 0.2.0-1
 - Added config directories globus and ncg-localdb.d to package
 - Removed obsolete failure_prediction_enabled
