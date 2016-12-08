@@ -91,8 +91,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_sbindir}/ncg.reload.sh
 /usr/libexec/%{name}/argo-unicore-keystore.sh
 /usr/libexec/%{name}/argo-unicore-truststore.sh
-install --mode=755 argo-unicore-keystore.sh $RPM_BUILD_ROOT/usr/libexec/%{name}
-install --mode=755 argo-unicore-truststore.sh $RPM_BUILD_ROOT/usr/libexec/%{name}
 
 %{perllib}/NCG.pm
 %{perllib}/NCG/
