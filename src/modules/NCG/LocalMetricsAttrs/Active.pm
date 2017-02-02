@@ -401,6 +401,10 @@ sub _analyzeURLs {
         eval {my $cdmiurl = url($attr);
         $self->{SITEDB}->hostAttribute($hostname, 'BROKER_PORT', $cdmiurl->port);};
     }
+    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "globus-GSISSHD_URL")) {
+        eval {my $url = url($attr);
+        $self->{SITEDB}->hostAttribute($hostname, 'GSISSH_PORT', $url->port);};
+    }
 }
 
 sub _setDefaultPorts {
@@ -421,7 +425,7 @@ sub _setDefaultPorts {
 	$self->{SITEDB}->globalAttribute("WMPROXY_PORT", 7443);
 	$self->{SITEDB}->globalAttribute("SRM1_PORT", 8443);
 	$self->{SITEDB}->globalAttribute("SRM2_PORT", 8446);
-	$self->{SITEDB}->globalAttribute("VOBOX_PORT", 1975);
+	$self->{SITEDB}->globalAttribute("GSISSH_PORT", 1975);
 	$self->{SITEDB}->globalAttribute("FTS_PORT", 8443);
 	$self->{SITEDB}->globalAttribute("GRIDICE_PORT", 2136);
 	$self->{SITEDB}->globalAttribute("CREAM_PORT", 8443);

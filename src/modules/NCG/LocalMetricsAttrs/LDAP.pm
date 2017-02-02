@@ -250,7 +250,7 @@ sub getData {
             if ($entry->get_value('GlueServiceEndpoint') && $entry->get_value('GlueServiceEndpoint') =~ /gsissh:\/\/([-_.A-Za-z0-9]+):(\d+)/) {
                 $hostname = $1;
                 $port = $2;
-                $self->{SITEDB}->hostAttribute($hostname, "VOBOX_PORT", $port);
+                $self->{SITEDB}->hostAttribute($hostname, "GSISSH_PORT", $port);
             }
         }
     }
