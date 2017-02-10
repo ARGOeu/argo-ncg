@@ -175,7 +175,7 @@ $SERVICE_TEMPL->{native_15}->{maxCheckAttempts} = 4;
 # cadist(.nrpe).template
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{config} = {%{$SERVICE_TEMPL->{360}}};
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{config}->{maxCheckAttempts} = 3;
-$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{config}->{path} = '/usr/lib64/nagios/plugins/igtf/';
+$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/igtf/';
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{config}->{timeout} = 120;
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{probe} = 'download_files';
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{flags}->{NOHOSTNAME} = 1;
@@ -184,7 +184,7 @@ $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{parameter}->{
 
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{config} = {%{$SERVICE_TEMPL->{1440}}};
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{config}->{maxCheckAttempts} = 2;
-$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{config}->{path} = '/usr/lib64/nagios/plugins/igtf/';
+$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/igtf/';
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{probe} = 'check_ca_dist';
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{flags}->{NOHOSTNAME} = 1;
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{docurl} = "http://wiki.cro-ngi.hr/en/index.php/hr.srce.CADist-Check";
@@ -194,7 +194,7 @@ $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{parameter}->{'--
 
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{config} = {%{$SERVICE_TEMPL->{1440}}};
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{config}->{maxCheckAttempts} = 2;
-$WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{config}->{path} = '/usr/lib64/nagios/plugins/igtf/';
+$WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/igtf/';
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{probe} = 'check_ca_dist';
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{flags}->{NOHOSTNAME} = 1;
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{flags}->{NRPE_SERVICE} = 1;
@@ -205,7 +205,7 @@ $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{parameter}->{'--ob
 
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CertLifetime'}->{probe} = 'CertLifetime-probe';
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CertLifetime'}->{config} = {%{$SERVICE_TEMPL->{240}}};
-$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CertLifetime'}->{config}->{path} = '/usr/lib64/nagios/plugins/globus';
+$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CertLifetime'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/cert';
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CertLifetime'}->{config}->{maxCheckAttempts} = 2;
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CertLifetime'}->{attribute}->{NAGIOS_HOST_CERT} = "-f";
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CertLifetime'}->{flags}->{NOHOSTNAME} = 1;
@@ -213,7 +213,7 @@ $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CertLifetime'}->{flags}->{NOHOSTN
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CertLifetime'}->{probe} = "CertLifetime-probe";
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CertLifetime'}->{config} = {%{$SERVICE_TEMPL->{240}}};
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CertLifetime'}->{config}->{maxCheckAttempts} = 2;
-$WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CertLifetime'}->{config}->{path} = '/usr/lib64/nagios/plugins/globus';
+$WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CertLifetime'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/cert';
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CertLifetime'}->{attribute}->{NAGIOS_HOST_CERT} = "-f";
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CertLifetime'}->{flags}->{NOHOSTNAME} = 1;
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CertLifetime'}->{flags}->{NRPE_SERVICE} = 1;
@@ -294,7 +294,7 @@ $WLCG_SERVICE->{internal}->{'org.nagios.ProcessNSCA'}->{parameter}->{-c} = '1:10
 # gocdbdowntime.template
 
 $WLCG_SERVICE->{'org.egee.ImportGocdbDowntimes'}->{probe} = "nagios-gocdb-downtime";
-$WLCG_SERVICE->{'org.egee.ImportGocdbDowntimes'}->{config}->{path} = '/usr/lib64/nagios/plugins/gocdb';
+$WLCG_SERVICE->{'org.egee.ImportGocdbDowntimes'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/gocdb';
 $WLCG_SERVICE->{'org.egee.ImportGocdbDowntimes'}->{config}->{interval} = 240;
 $WLCG_SERVICE->{'org.egee.ImportGocdbDowntimes'}->{config}->{timeout} = 120;
 $WLCG_SERVICE->{'org.egee.ImportGocdbDowntimes'}->{config}->{retryInterval} = 10;
@@ -321,7 +321,7 @@ $WLCG_SERVICE->{'org.nagiosexchange.NCGLogFiles'}->{flags}->{PNP} = 1;
 $WLCG_SERVICE->{'org.nagiosexchange.NCGLogFiles'}->{parameter}->{'-f'} = '/etc/argo-ncg/check_logfiles_ncg.conf';
 
 $WLCG_SERVICE->{'hr.srce.GridProxy-Valid'}->{probe} = "GridProxy-probe";
-$WLCG_SERVICE->{'hr.srce.GridProxy-Valid'}->{config}->{path} = '/usr/lib64/nagios/plugins/globus';
+$WLCG_SERVICE->{'hr.srce.GridProxy-Valid'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/globus';
 $WLCG_SERVICE->{'hr.srce.GridProxy-Valid'}->{config}->{timeout} = 30;
 $WLCG_SERVICE->{'hr.srce.GridProxy-Valid'}->{config}->{interval} = 15;
 $WLCG_SERVICE->{'hr.srce.GridProxy-Valid'}->{config}->{retryInterval} = 3;
@@ -339,7 +339,7 @@ $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{config}->{timeout} = 120;
 $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{config}->{interval} = 240;
 $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{config}->{retryInterval} = 5;
 $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{config}->{maxCheckAttempts} = 3;
-$WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{config}->{path} = '/usr/lib64/nagios/plugins/globus';
+$WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/globus';
 $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{flags}->{NOHOSTNAME} = 1;
 $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{flags}->{VO} = 1;
 $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{flags}->{NRPE} = 1;
@@ -363,7 +363,7 @@ $WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{config}->{timeout} = 120;
 $WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{config}->{interval} = 60;
 $WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{config}->{retryInterval} = 5;
 $WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{config}->{maxCheckAttempts} = 3;
-$WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{config}->{path} = '/usr/lib64/nagios/plugins/globus';
+$WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/globus';
 $WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{flags}->{VO} = 1;
 $WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{flags}->{NRPE} = 1;
 $WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{flags}->{LOCALDEP} = 1;
