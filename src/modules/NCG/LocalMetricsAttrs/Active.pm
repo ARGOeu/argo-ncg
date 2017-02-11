@@ -332,6 +332,11 @@ sub _analyzeURLs {
             $self->{SITEDB}->hostAttribute($hostname, "QCG-NOTIFICATION_PORT", $3);
         }
     }   
+    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "globus-GSISSHD_URL")) {
+        if ($attr =~ /(\S+?:\/\/)?([-_.A-Za-z0-9]+):(\d+)/ ) {
+            $self->{SITEDB}->hostAttribute($hostname, "GSISSH_PORT", $3);
+        }
+    }
 
     my @unicoreServices = ("unicore6.Gateway", "unicore6.ServiceOrchestrator", "unicore6.StorageManagement", "unicore6.TargetSystemFactory", "unicore6.UVOSAssertionQueryService", "unicore6.WorkflowFactory", "unicore6.StorageFactory");
     foreach my $unicoreService (@unicoreServices) {
@@ -400,10 +405,6 @@ sub _analyzeURLs {
     if ($attr = $self->{SITEDB}->hostAttribute($hostname, "eu.egi.cloud.broker.compss_URL")) {
         eval {my $cdmiurl = url($attr);
         $self->{SITEDB}->hostAttribute($hostname, 'BROKER_PORT', $cdmiurl->port);};
-    }
-    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "globus-GSISSHD_URL")) {
-        eval {my $url = url($attr);
-        $self->{SITEDB}->hostAttribute($hostname, 'GSISSH_PORT', $url->port);};
     }
 }
 
