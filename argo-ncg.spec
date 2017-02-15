@@ -5,7 +5,7 @@
 
 Summary: ARGO Nagios config generator
 Name: argo-ncg
-Version: 0.2.2
+Version: 0.3.0
 Release: 1%{?dist}
 License: ASL 2.0
 Group: Network/Monitoring
@@ -105,6 +105,13 @@ if [ -f /etc/init.d/ncg ] ; then
 fi
 
 %changelog
+* Wed Feb 2017 Emir Imamagic <eimamagi@srce.hr> - 0.3.0-1
+- Add probe for monitoring decommission of dCache 2.10
+- Fix configuration of test dg.FinishedJobs
+- Add support for extracting gsisshd port
+- Integrate onedata probes to monitoring instances
+- Add scripts for handling UNICORE configuration
+- Various metric configuration changes
 * Thu Dec 8 2016 Emir Imamagic <eimamagi@srce.hr> - 0.2.2-1
 - Changes from ARGO central instances
 * Fri Jul 29 2016 Emir Imamagic <eimamagi@srce.hr> - 0.2.1-1
