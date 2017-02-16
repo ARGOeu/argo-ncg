@@ -105,7 +105,7 @@ if [ -f /etc/init.d/ncg ] ; then
 fi
 
 %changelog
-* Wed Feb 2017 Emir Imamagic <eimamagi@srce.hr> - 0.3.0-1
+* Wed Feb 15 2017 Emir Imamagic <eimamagi@srce.hr> - 0.3.0-1
 - Add probe for monitoring decommission of dCache 2.10
 - Fix configuration of test dg.FinishedJobs
 - Add support for extracting gsisshd port
