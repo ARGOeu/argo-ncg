@@ -114,7 +114,7 @@ sub getData {
                             timelimit => 60 );
     
     if ($mesg->code) {
-        $self->error("Could not fetch SE info from LDAP: ".$mesg->error);
+        $self->verbose("Could not fetch SE info from LDAP: ".$mesg->error);
     } else {
         foreach $entry ($mesg->entries()) {
             $hostname = $entry->get_value('GlueSEUniqueID') or next;
@@ -126,7 +126,7 @@ sub getData {
                                         attrs => ['GlueVOInfoAccessControlBaseRule','GlueVOInfoPath'],
                                         timelimit => 60 );
             if ($mesg1->code) {
-                $self->error("Could not fetch SE VO info from LDAP: ".$mesg->error);    
+                $self->verbose("Could not fetch SE VO info from LDAP: ".$mesg->error);    
             } else {
                 foreach my $voEntry ($mesg1->entries()) {
                     my $voname = $voEntry->get_value('GlueVOInfoAccessControlBaseRule') or next;
@@ -159,7 +159,7 @@ sub getData {
                             attrs=> ['GlueCEUniqueID'],
                             timelimit => 60 );
     if ($mesg->code) {
-        $self->error("Could not fetch CE info from LDAP: ".$mesg->error);
+        $self->verbose("Could not fetch CE info from LDAP: ".$mesg->error);
     } else {
         foreach $entry ($mesg->entries()) {
             if ($entry->get_value('GlueCEUniqueID') && $entry->get_value('GlueCEUniqueID') =~ /([-_.A-Za-z0-9]+):(\d+)\/(jobmanager|blahp)-([-_.A-Za-z0-9]+)-([-_.A-Za-z0-9]+)/) {
@@ -177,18 +177,19 @@ sub getData {
                             timelimit => 60 );
     
     if ($mesg->code) {
-        $self->error("Could not fetch CREAM CE info from LDAP: ".$mesg->error);
+        $self->verbose("Could not fetch CREAM CE info from LDAP: ".$mesg->error);
     } else {
         foreach $entry ($mesg->entries()) {
-            if ($entry->get_value('GlueCEUniqueID') && $entry->get_value('GlueCEUniqueID') =~ /([-_.A-Za-z0-9]+):(\d+)\/(cream-([-_.A-Za-z0-9]+?)-([-_.A-Za-z0-9]+))$/) {
+            if ($entry->get_value('GlueCEUniqueID') && $entry->get_value('GlueCEUniqueID') =~ /([-_.A-Za-z0-9]+):(\d+)\/(cream-([-_.A-Za-z0-9]+?)-([-_.A-Za-z0-9@]+))$/) {
                 $hostname = $1;
                 $port = $2;
-                my $cream_queue = $3;
+                my $cream_lrms = $4;
+                my $cream_queue = $5;
                 $self->{SITEDB}->hostAttribute($hostname, "CREAM_PORT", $port);
-                
                 foreach my $attr ($entry->get_value('GlueCEAccessControlBaseRule')) {
                     if ($attr =~ /VO:(.*)/) {
                         my $voname = lc($1);
+                        $self->{SITEDB}->hostAttributeVO($hostname, "CREAM_LRMS", $voname, $cream_lrms);
                         $self->{SITEDB}->hostAttributeVO($hostname, "CREAM_QUEUE", $voname, $cream_queue);
                     }
                 }
@@ -202,7 +203,7 @@ sub getData {
                             attrs=> ['GlueServiceEndpoint','GlueServiceVersion'],
                             timelimit => 60 );
     if ($mesg->code) {
-        $self->error("Could not fetch SRM info from LDAP: ".$mesg->error);
+        $self->verbose("Could not fetch SRM info from LDAP: ".$mesg->error);
     } else {
         foreach $entry ($mesg->entries()) {
             if ($entry->get_value('GlueServiceEndpoint') && $entry->get_value('GlueServiceEndpoint') =~ /httpg:\/\/([-_.A-Za-z0-9]+):(\d+)\/srm/) {
@@ -226,7 +227,7 @@ sub getData {
                             attrs=> ['GlueServiceEndpoint'],
                             timelimit => 60 );
     if ($mesg->code) {
-        $self->error("Could not fetch WMS info from LDAP: ".$mesg->error);
+        $self->verbose("Could not fetch WMS info from LDAP: ".$mesg->error);
     } else {
         foreach $entry ($mesg->entries()) {
             if ($entry->get_value('GlueServiceEndpoint') && $entry->get_value('GlueServiceEndpoint') =~ /^(https:\/\/([-_.A-Za-z0-9]+):(\d+)\/[-_.A-Za-z0-9]+)$/) {
@@ -243,13 +244,13 @@ sub getData {
                             attrs=> ['GlueServiceEndpoint'],
                             timelimit => 60 );
     if ($mesg->code) {
-        $self->error("Could not fetch VOBOX info from LDAP: ".$mesg->error);
+        $self->verbose("Could not fetch VOBOX info from LDAP: ".$mesg->error);
     } else {
         foreach $entry ($mesg->entries()) {
             if ($entry->get_value('GlueServiceEndpoint') && $entry->get_value('GlueServiceEndpoint') =~ /gsissh:\/\/([-_.A-Za-z0-9]+):(\d+)/) {
                 $hostname = $1;
                 $port = $2;
-                $self->{SITEDB}->hostAttribute($hostname, "VOBOX_PORT", $port);
+                $self->{SITEDB}->hostAttribute($hostname, "GSISSH_PORT", $port);
             }
         }
     }
@@ -260,7 +261,7 @@ sub getData {
                             attrs=> ['GlueServiceEndpoint'],
                             timelimit => 60 );
     if ($mesg->code) {
-        $self->error("Could not fetch PROX info from LDAP: ".$mesg->error);
+        $self->verbose("Could not fetch PROX info from LDAP: ".$mesg->error);
     } else {
         foreach $entry ($mesg->entries()) {
             if ($entry->get_value('GlueServiceEndpoint') && $entry->get_value('GlueServiceEndpoint') =~ /([-_.A-Za-z0-9]+):(\d+)/) {
@@ -277,7 +278,7 @@ sub getData {
                             attrs=> ['GlueServiceEndpoint'],
                             timelimit => 60 );
     if ($mesg->code) {
-        $self->error("Could not fetch MON info from LDAP: ".$mesg->error);
+        $self->verbose("Could not fetch MON info from LDAP: ".$mesg->error);
     } else {
         foreach $entry ($mesg->entries()) {
             if ($entry->get_value('GlueServiceEndpoint') && $entry->get_value('GlueServiceEndpoint') =~ /^https:\/\/([-_.A-Za-z0-9]+):(\d+)/) {
@@ -294,7 +295,7 @@ sub getData {
                             attrs=> ['GlueServiceEndpoint'],
                             timelimit => 60 );
     if ($mesg->code) {
-        $self->error("Could not fetch TOP BDII info from LDAP: ".$mesg->error);
+        $self->verbose("Could not fetch TOP BDII info from LDAP: ".$mesg->error);
     } else {
         foreach $entry ($mesg->entries()) {
             if ($entry->get_value('GlueServiceEndpoint') && $entry->get_value('GlueServiceEndpoint') =~ /([-_.A-Za-z0-9]+):(\d+)\/bdii\-(top|site)/) {

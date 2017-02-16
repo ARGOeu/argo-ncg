@@ -1,5 +1,0 @@
-define servicegroup{
-        servicegroup_name               <service>
-        alias                           <service>
-}
-

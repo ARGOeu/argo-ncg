@@ -175,25 +175,27 @@ $SERVICE_TEMPL->{native_15}->{maxCheckAttempts} = 4;
 # cadist(.nrpe).template
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{config} = {%{$SERVICE_TEMPL->{360}}};
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{config}->{maxCheckAttempts} = 3;
+$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/igtf/';
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{config}->{timeout} = 120;
-$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{probe} = 'cadist/download_files';
+$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{probe} = 'download_files';
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{flags}->{NOHOSTNAME} = 1;
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{docurl} = "http://wiki.cro-ngi.hr/en/index.php/hr.srce.CADist-GetFiles";
-$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{parameter}->{'--download-list'} = 'http://repository.egi.eu/sw/production/cas/1/current/meta/ca-policy-egi-core.release,http://repository.egi.eu/sw/production/cas/1/current/meta/ca-policy-egi-core.list,http://repository.egi.eu/sw/production/cas/1/current/meta/ca-policy-egi-core.obsoleted';
-$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{parameter}->{'--output-dir'} = '/var/lib/gridprobes-cadist/var/';
+$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-GetFiles'}->{parameter}->{'--download-list'} = 'http://repository.egi.eu/sw/production/cas/1/current/meta/ca-policy-egi-core.release,http://repository.egi.eu/sw/production/cas/1/current/meta/ca-policy-egi-core.list,http://repository.egi.eu/sw/production/cas/1/current/meta/ca-policy-egi-core.obsoleted,http://repository.egi.eu/sw/production/cas/1/current/meta/ca-policy-egi-core.subjectdn,http://repository.egi.eu/sw/production/cas/1/current/meta/ca-policy-egi-core.obsoleted-subjectdn';
 
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{config} = {%{$SERVICE_TEMPL->{1440}}};
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{config}->{maxCheckAttempts} = 2;
-$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{probe} = 'cadist/check_ca_dist';
+$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/igtf/';
+$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{probe} = 'check_ca_dist';
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{flags}->{NOHOSTNAME} = 1;
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{docurl} = "http://wiki.cro-ngi.hr/en/index.php/hr.srce.CADist-Check";
-$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{parameter}->{'--release-url'} = '/var/lib/gridprobes-cadist/var/ca-policy-egi-core.release,http://repository.egi.eu/sw/production/cas/1/current/meta/ca-policy-egi-core.release';
-$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{parameter}->{'--package-list-url'} = '/var/lib/gridprobes-cadist/var/ca-policy-egi-core.list,http://repository.egi.eu/sw/production/cas/1/current/meta/ca-policy-egi-core.list';
-$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{parameter}->{'--obsolete-list-url'} = '/var/lib/gridprobes-cadist/var/ca-policy-egi-core.obsoleted,http://repository.egi.eu/sw/production/cas/1/current/meta/ca-policy-egi-core.obsoleted';
+$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{parameter}->{'--release-url'} = '/var/spool/nagios/nagios-plugins-igtf/ca-policy-egi-core.release,http://repository.egi.eu/sw/production/cas/1/current/meta/ca-policy-egi-core.release';
+$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{parameter}->{'--package-list-url'} = '/var/spool/nagios/nagios-plugins-igtf/ca-policy-egi-core.list,http://repository.egi.eu/sw/production/cas/1/current/meta/ca-policy-egi-core.list';
+$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CADist-Check'}->{parameter}->{'--obsolete-list-url'} = '/var/spool/nagios/nagios-plugins-igtf/ca-policy-egi-core.obsoleted,http://repository.egi.eu/sw/production/cas/1/current/meta/ca-policy-egi-core.obsoleted';
 
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{config} = {%{$SERVICE_TEMPL->{1440}}};
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{config}->{maxCheckAttempts} = 2;
-$WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{probe} = 'cadist/check_ca_dist';
+$WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/igtf/';
+$WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{probe} = 'check_ca_dist';
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{flags}->{NOHOSTNAME} = 1;
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{flags}->{NRPE_SERVICE} = 1;
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{docurl} = "http://wiki.cro-ngi.hr/en/index.php/hr.srce.CADist-Check";
@@ -201,15 +203,17 @@ $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{parameter}->{'--re
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{parameter}->{'--package-list-url'} = 'http://repository.egi.eu/sw/production/cas/1/current/meta/ca-policy-egi-core.list';
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CADist-Check'}->{parameter}->{'--obsolete-list-url'} = 'http://repository.egi.eu/sw/production/cas/1/current/meta/ca-policy-egi-core.obsoleted';
 
-$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CertLifetime'}->{probe} = "hr.srce/CertLifetime-probe";
+$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CertLifetime'}->{probe} = 'CertLifetime-probe';
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CertLifetime'}->{config} = {%{$SERVICE_TEMPL->{240}}};
+$WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CertLifetime'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/cert';
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CertLifetime'}->{config}->{maxCheckAttempts} = 2;
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CertLifetime'}->{attribute}->{NAGIOS_HOST_CERT} = "-f";
 $WLCG_SERVICE->{internal}->{NAGIOS}->{'hr.srce.CertLifetime'}->{flags}->{NOHOSTNAME} = 1;
 
-$WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CertLifetime'}->{probe} = "hr.srce/CertLifetime-probe";
+$WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CertLifetime'}->{probe} = "CertLifetime-probe";
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CertLifetime'}->{config} = {%{$SERVICE_TEMPL->{240}}};
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CertLifetime'}->{config}->{maxCheckAttempts} = 2;
+$WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CertLifetime'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/cert';
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CertLifetime'}->{attribute}->{NAGIOS_HOST_CERT} = "-f";
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CertLifetime'}->{flags}->{NOHOSTNAME} = 1;
 $WLCG_SERVICE->{internal}->{NRPE}->{'hr.srce.CertLifetime'}->{flags}->{NRPE_SERVICE} = 1;
@@ -290,7 +294,7 @@ $WLCG_SERVICE->{internal}->{'org.nagios.ProcessNSCA'}->{parameter}->{-c} = '1:10
 # gocdbdowntime.template
 
 $WLCG_SERVICE->{'org.egee.ImportGocdbDowntimes'}->{probe} = "nagios-gocdb-downtime";
-$WLCG_SERVICE->{'org.egee.ImportGocdbDowntimes'}->{config}->{path} = $NCG::NCG_PLUGINS_PATH_GRIDMON;
+$WLCG_SERVICE->{'org.egee.ImportGocdbDowntimes'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/gocdb';
 $WLCG_SERVICE->{'org.egee.ImportGocdbDowntimes'}->{config}->{interval} = 240;
 $WLCG_SERVICE->{'org.egee.ImportGocdbDowntimes'}->{config}->{timeout} = 120;
 $WLCG_SERVICE->{'org.egee.ImportGocdbDowntimes'}->{config}->{retryInterval} = 10;
@@ -314,10 +318,10 @@ $WLCG_SERVICE->{'org.nagiosexchange.NCGLogFiles'}->{config} = {%{$SERVICE_TEMPL-
 $WLCG_SERVICE->{'org.nagiosexchange.NCGLogFiles'}->{config}->{maxCheckAttempts} = 1;
 $WLCG_SERVICE->{'org.nagiosexchange.NCGLogFiles'}->{flags}->{NOHOSTNAME} = 1;
 $WLCG_SERVICE->{'org.nagiosexchange.NCGLogFiles'}->{flags}->{PNP} = 1;
-$WLCG_SERVICE->{'org.nagiosexchange.NCGLogFiles'}->{parameter}->{'-f'} = '/etc/ncg/check_logfiles_ncg.conf';
+$WLCG_SERVICE->{'org.nagiosexchange.NCGLogFiles'}->{parameter}->{'-f'} = '/etc/argo-ncg/check_logfiles_ncg.conf';
 
-$WLCG_SERVICE->{'hr.srce.GridProxy-Valid'}->{probe} = "hr.srce/GridProxy-probe";
-$WLCG_SERVICE->{'hr.srce.GridProxy-Valid'}->{config}->{path} = $NCG::NCG_PROBES_PATH_GRIDMON;
+$WLCG_SERVICE->{'hr.srce.GridProxy-Valid'}->{probe} = "GridProxy-probe";
+$WLCG_SERVICE->{'hr.srce.GridProxy-Valid'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/globus';
 $WLCG_SERVICE->{'hr.srce.GridProxy-Valid'}->{config}->{timeout} = 30;
 $WLCG_SERVICE->{'hr.srce.GridProxy-Valid'}->{config}->{interval} = 15;
 $WLCG_SERVICE->{'hr.srce.GridProxy-Valid'}->{config}->{retryInterval} = 3;
@@ -330,12 +334,12 @@ $WLCG_SERVICE->{'hr.srce.GridProxy-Valid'}->{attribute}->{X509_USER_PROXY} = "-x
 $WLCG_SERVICE->{'hr.srce.GridProxy-Valid'}->{attribute}->{VONAME} = "--vo";
 $WLCG_SERVICE->{'hr.srce.GridProxy-Valid'}->{dependency}->{"hr.srce.GridProxy-Get"} = 0;
 
-$WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{probe} = "hr.srce/refresh_proxy";
+$WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{probe} = "refresh_proxy";
 $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{config}->{timeout} = 120;
 $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{config}->{interval} = 240;
 $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{config}->{retryInterval} = 5;
 $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{config}->{maxCheckAttempts} = 3;
-$WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{config}->{path} = $NCG::NCG_PROBES_PATH_GRIDMON;
+$WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/globus';
 $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{flags}->{NOHOSTNAME} = 1;
 $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{flags}->{VO} = 1;
 $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{flags}->{NRPE} = 1;
@@ -352,56 +356,14 @@ $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{attribute}->{ROBOT_CERT} = "--robot-c
 $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{attribute}->{ROBOT_KEY} = "--robot-key";
 $WLCG_SERVICE->{'hr.srce.GridProxy-Get'}->{attribute}->{PROXY_LIFETIME} = "--lifetime";
 
-# localdb.template
-$WLCG_SERVICE->{'org.egee.SendToMetricStore'}->{probe} = "send_to_db";
-$WLCG_SERVICE->{'org.egee.SendToMetricStore'}->{config}->{timeout} = 120;
-$WLCG_SERVICE->{'org.egee.SendToMetricStore'}->{config}->{interval} = 5;
-$WLCG_SERVICE->{'org.egee.SendToMetricStore'}->{config}->{retryInterval} = 2;
-$WLCG_SERVICE->{'org.egee.SendToMetricStore'}->{config}->{maxCheckAttempts} = 4;
-$WLCG_SERVICE->{'org.egee.SendToMetricStore'}->{config}->{path} = $NCG::NCG_PLUGINS_PATH_GRIDMON;
-$WLCG_SERVICE->{'org.egee.SendToMetricStore'}->{flags}->{NOHOSTNAME} = 1;
-$WLCG_SERVICE->{'org.egee.SendToMetricStore'}->{flags}->{PNP} = 1;
-$WLCG_SERVICE->{'org.egee.SendToMetricStore'}->{parameter}->{'--extra-opts'} = 'send_to_db@/etc/nagios/plugins/send_to_db.ini';
-
-$WLCG_SERVICE->{'ch.cern.sam.POEMSync'}->{probe} = "check_poem_sync";
-$WLCG_SERVICE->{'ch.cern.sam.POEMSync'}->{config}->{timeout} = 120;
-$WLCG_SERVICE->{'ch.cern.sam.POEMSync'}->{config}->{interval} = 30;
-$WLCG_SERVICE->{'ch.cern.sam.POEMSync'}->{config}->{retryInterval} = 10;
-$WLCG_SERVICE->{'ch.cern.sam.POEMSync'}->{config}->{maxCheckAttempts} = 4;
-$WLCG_SERVICE->{'ch.cern.sam.POEMSync'}->{config}->{path} = '/usr/bin/';
-$WLCG_SERVICE->{'ch.cern.sam.POEMSync'}->{flags}->{NOHOSTNAME} = 1;
-$WLCG_SERVICE->{'ch.cern.sam.POEMSync'}->{flags}->{NOARGS} = 1;
-
-$WLCG_SERVICE->{'org.egee.ATPSync'}->{probe} = "check_atp_sync";
-$WLCG_SERVICE->{'org.egee.ATPSync'}->{config}->{timeout} = 600;
-$WLCG_SERVICE->{'org.egee.ATPSync'}->{config}->{interval} = 30;
-$WLCG_SERVICE->{'org.egee.ATPSync'}->{config}->{retryInterval} = 15;
-$WLCG_SERVICE->{'org.egee.ATPSync'}->{config}->{maxCheckAttempts} = 4;
-$WLCG_SERVICE->{'org.egee.ATPSync'}->{config}->{path} = '/usr/bin/';
-$WLCG_SERVICE->{'org.egee.ATPSync'}->{flags}->{NOHOSTNAME} = 1;
-$WLCG_SERVICE->{'org.egee.ATPSync'}->{flags}->{NOARGS} = 1;
-
-$WLCG_SERVICE->{'org.nagios.MrsDirSize'}->{probe} = "org.nagiosexchange/check_dirsize.sh";
-$WLCG_SERVICE->{'org.nagios.MrsDirSize'}->{config}->{timeout} = 15;
-$WLCG_SERVICE->{'org.nagios.MrsDirSize'}->{config}->{interval} = 60;
-$WLCG_SERVICE->{'org.nagios.MrsDirSize'}->{config}->{retryInterval} = 5;
-$WLCG_SERVICE->{'org.nagios.MrsDirSize'}->{config}->{maxCheckAttempts} = 3;
-$WLCG_SERVICE->{'org.nagios.MrsDirSize'}->{config}->{path} = $NCG::NCG_PROBES_PATH_GRIDMON;
-$WLCG_SERVICE->{'org.nagios.MrsDirSize'}->{flags}->{NOHOSTNAME} = 1;
-$WLCG_SERVICE->{'org.nagios.MrsDirSize'}->{flags}->{PNP} = 1;
-$WLCG_SERVICE->{'org.nagios.MrsDirSize'}->{parameter}->{'-d'} = '/var/spool/nagios2metricstore';
-$WLCG_SERVICE->{'org.nagios.MrsDirSize'}->{parameter}->{'-w'} = '10000';
-$WLCG_SERVICE->{'org.nagios.MrsDirSize'}->{parameter}->{'-c'} = '100000';
-$WLCG_SERVICE->{'org.nagios.MrsDirSize'}->{parameter}->{'-f'} = '';
-
 # myproxy(.nrpe).template
 
-$WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{probe} = "hr.srce/MyProxy-probe";
+$WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{probe} = "MyProxy-probe";
 $WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{config}->{timeout} = 120;
 $WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{config}->{interval} = 60;
 $WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{config}->{retryInterval} = 5;
 $WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{config}->{maxCheckAttempts} = 3;
-$WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{config}->{path} = $NCG::NCG_PROBES_PATH_GRIDMON;
+$WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/globus';
 $WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{flags}->{VO} = 1;
 $WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{flags}->{NRPE} = 1;
 $WLCG_SERVICE->{'hr.srce.MyProxy-ProxyLifetime'}->{flags}->{LOCALDEP} = 1;
@@ -426,17 +388,17 @@ $WLCG_SERVICE->{'org.egee.SendToMsg'}->{config}->{timeout} = 120;
 $WLCG_SERVICE->{'org.egee.SendToMsg'}->{config}->{interval} = 5;
 $WLCG_SERVICE->{'org.egee.SendToMsg'}->{config}->{retryInterval} = 2;
 $WLCG_SERVICE->{'org.egee.SendToMsg'}->{config}->{maxCheckAttempts} = 4;
-$WLCG_SERVICE->{'org.egee.SendToMsg'}->{config}->{path} = $NCG::NCG_PLUGINS_PATH_GRIDMON;
+$WLCG_SERVICE->{'org.egee.SendToMsg'}->{config}->{path} = '/usr/libexec/argo-msg-nagios/';
 $WLCG_SERVICE->{'org.egee.SendToMsg'}->{flags}->{NOHOSTNAME} = 1;
-$WLCG_SERVICE->{'org.egee.SendToMsg'}->{flags}->{NOARGS} = 1;
 $WLCG_SERVICE->{'org.egee.SendToMsg'}->{flags}->{PNP} = 1;
+$WLCG_SERVICE->{'org.egee.SendToMsg'}->{parameter}->{'--persistent'} = '';
 
 $WLCG_SERVICE->{'org.egee.RecvFromQueue'}->{probe} = "recv_from_queue";
 $WLCG_SERVICE->{'org.egee.RecvFromQueue'}->{config}->{timeout} = 120;
 $WLCG_SERVICE->{'org.egee.RecvFromQueue'}->{config}->{interval} = 5;
 $WLCG_SERVICE->{'org.egee.RecvFromQueue'}->{config}->{retryInterval} = 2;
 $WLCG_SERVICE->{'org.egee.RecvFromQueue'}->{config}->{maxCheckAttempts} = 4;
-$WLCG_SERVICE->{'org.egee.RecvFromQueue'}->{config}->{path} = $NCG::NCG_PLUGINS_PATH_GRIDMON;
+$WLCG_SERVICE->{'org.egee.RecvFromQueue'}->{config}->{path} = '/usr/libexec/argo-msg-nagios/';
 $WLCG_SERVICE->{'org.egee.RecvFromQueue'}->{flags}->{NOHOSTNAME} = 1;
 $WLCG_SERVICE->{'org.egee.RecvFromQueue'}->{flags}->{NOARGS} = 1;
 $WLCG_SERVICE->{'org.egee.RecvFromQueue'}->{flags}->{PNP} = 1;
@@ -499,27 +461,14 @@ $WLCG_SERVICE->{'org.nagios.NagiosCmdFile'}->{parameter}->{-r} = '';
 $WLCG_SERVICE->{'org.nagios.NagiosCmdFile'}->{parameter}->{-w} = '';
 $WLCG_SERVICE->{'org.nagios.NagiosCmdFile'}->{parameter}->{-o} = '';
 
-# $WLCG_SERVICE->{'org.nagios.NCGPidFile'}->{probe} = 'check_file_age';
-# $WLCG_SERVICE->{'org.nagios.NCGPidFile'}->{config}->{path} = $NCG::NCG_PROBES_PATH_NAGIOS;
-# $WLCG_SERVICE->{'org.nagios.NCGPidFile'}->{config}->{interval} = 60;
-# $WLCG_SERVICE->{'org.nagios.NCGPidFile'}->{config}->{timeout} = 15;
-# $WLCG_SERVICE->{'org.nagios.NCGPidFile'}->{config}->{retryInterval} = 5;
-# $WLCG_SERVICE->{'org.nagios.NCGPidFile'}->{config}->{maxCheckAttempts} = 3;
-# $WLCG_SERVICE->{'org.nagios.NCGPidFile'}->{flags}->{NOHOSTNAME} = 1;
-# $WLCG_SERVICE->{'org.nagios.NCGPidFile'}->{flags}->{NOTIMEOUT} = 1;
-# $WLCG_SERVICE->{'org.nagios.NCGPidFile'}->{parameter}->{-f} = '/var/run/ncg/ncg.pid';
-# $WLCG_SERVICE->{'org.nagios.NCGPidFile'}->{parameter}->{-w} = '86400';
-# $WLCG_SERVICE->{'org.nagios.NCGPidFile'}->{parameter}->{-c} = '172800';
-# $WLCG_SERVICE->{'org.nagios.NCGPidFile'}->{docurl} = "http://wiki.cro-ngi.hr/en/index.php/Org.nagios.NCGPidFile";
-
 # GoodCEs for SAM-WMS
 
-$WLCG_SERVICE->{'hr.srce.GoodCEs'}->{probe} = "hr.srce/gather_healthy_nodes";
+$WLCG_SERVICE->{'hr.srce.GoodCEs'}->{probe} = "gather_healthy_nodes";
 $WLCG_SERVICE->{'hr.srce.GoodCEs'}->{config}->{timeout} = 120;
 $WLCG_SERVICE->{'hr.srce.GoodCEs'}->{config}->{interval} = 15;
 $WLCG_SERVICE->{'hr.srce.GoodCEs'}->{config}->{retryInterval} = 5;
 $WLCG_SERVICE->{'hr.srce.GoodCEs'}->{config}->{maxCheckAttempts} = 3;
-$WLCG_SERVICE->{'hr.srce.GoodCEs'}->{config}->{path} = $NCG::NCG_PROBES_PATH_GRIDMON;
+$WLCG_SERVICE->{'hr.srce.GoodCEs'}->{config}->{path} = '/usr/libexec/argo-nagios-tools';
 $WLCG_SERVICE->{'hr.srce.GoodCEs'}->{flags}->{NOHOSTNAME} = 1;
 $WLCG_SERVICE->{'hr.srce.GoodCEs'}->{flags}->{PNP} = 1;
 $WLCG_SERVICE->{'hr.srce.GoodCEs'}->{flags}->{VO} = 1;
@@ -529,16 +478,14 @@ $WLCG_SERVICE->{'hr.srce.GoodCEs'}->{attribute}->{VONAME} = "--vo";
 $WLCG_SERVICE->{'hr.srce.GoodCEs'}->{attribute}->{VO_FQAN} = "--vo-fqan";
 $WLCG_SERVICE->{'hr.srce.GoodCEs'}->{parameter}->{'--dir'} = '/var/lib/gridprobes';
 $WLCG_SERVICE->{'hr.srce.GoodCEs'}->{parameter}->{'--file'} = 'GoodCEs';
-$WLCG_SERVICE->{'hr.srce.GoodCEs'}->{parameter}->{"--metric"} = 'emi.cream.CREAMCE-JobSubmit';
+$WLCG_SERVICE->{'hr.srce.GoodCEs'}->{parameter}->{"--metric"} = 'emi.cream.CREAMCE-JobPurge';
 
-# GoodSEs for CE-JobState and WN-RepRep
-
-$WLCG_SERVICE->{'hr.srce.GoodSEs'}->{probe} = "hr.srce/gather_healthy_nodes";
+$WLCG_SERVICE->{'hr.srce.GoodSEs'}->{probe} = "gather_healthy_nodes";
 $WLCG_SERVICE->{'hr.srce.GoodSEs'}->{config}->{timeout} = 120;
 $WLCG_SERVICE->{'hr.srce.GoodSEs'}->{config}->{interval} = 15;
 $WLCG_SERVICE->{'hr.srce.GoodSEs'}->{config}->{retryInterval} = 5;
 $WLCG_SERVICE->{'hr.srce.GoodSEs'}->{config}->{maxCheckAttempts} = 3;
-$WLCG_SERVICE->{'hr.srce.GoodSEs'}->{config}->{path} = $NCG::NCG_PROBES_PATH_GRIDMON;
+$WLCG_SERVICE->{'hr.srce.GoodSEs'}->{config}->{path} = '/usr/libexec/argo-nagios-tools';
 $WLCG_SERVICE->{'hr.srce.GoodSEs'}->{flags}->{NOHOSTNAME} = 1;
 $WLCG_SERVICE->{'hr.srce.GoodSEs'}->{flags}->{PNP} = 1;
 $WLCG_SERVICE->{'hr.srce.GoodSEs'}->{flags}->{VO} = 1;
@@ -548,6 +495,7 @@ $WLCG_SERVICE->{'hr.srce.GoodSEs'}->{attribute}->{VO_FQAN} = "--vo-fqan";
 $WLCG_SERVICE->{'hr.srce.GoodSEs'}->{parameter}->{"--metric"} = 'org.sam.SRM-All';
 $WLCG_SERVICE->{'hr.srce.GoodSEs'}->{parameter}->{'--dir'} = '/var/lib/gridprobes';
 $WLCG_SERVICE->{'hr.srce.GoodSEs'}->{parameter}->{'--file'} = 'GoodSEs';
+
 
 ########################################################################
 
@@ -617,7 +565,6 @@ $WLCG_NODETYPE->{security}->{"ARC-CE"} = [
 
 # Nagios internal checks profile
 $WLCG_NODETYPE->{internal}->{"NAGIOS"} = [
-'eu.egi.sec.CRL',
 'hr.srce.CADist-Check',
 'hr.srce.CADist-GetFiles',
 'hr.srce.CertLifetime',
@@ -626,12 +573,6 @@ $WLCG_NODETYPE->{internal}->{"NAGIOS"} = [
 'org.nagios.ProcessNpcd',
 'org.nagios.ProcessNSCA', # (if NRPE_UI is set)
 'org.egee.ImportGocdbDowntimes',
-'org.egee.SendToMetricStore', # (if LOCAL_METRIC_STORE)
-'org.egee.ATPSync', # (if LOCAL_METRIC_STORE)
-'ch.cern.sam.POEMSync', # (if LOCAL_METRIC_STORE)
-'ch.cern.sam.MrsCheckSpool',
-'ch.cern.sam.MrsCheckDBInserts',
-'org.nagios.MrsDirSize', # (if LOCAL_METRIC_STORE)
 'hr.srce.GridProxy-Valid', # (if INCLUDE_PROXY_CHECKS && local, NRPE)
 'hr.srce.GridProxy-Get', # (if INCLUDE_PROXY_CHECKS && local, NRPE)
 
@@ -646,12 +587,7 @@ $WLCG_NODETYPE->{internal}->{"NAGIOS"} = [
 'org.nagiosexchange.LogFiles',
 'org.nagios.NagiosCmdFile',
 'org.nagiosexchange.NCGLogFiles',
-'emi.cream.CREAMCE-JobMonit',
-'emi.cream.CREAMCE-DirectJobMonit',
-'emi.cream.glexec.CREAMCE-JobMonit',
 'emi.wms.WMS-JobMonit',
-'eu.egi.mpi.simplejob.CREAMCE-JobMonit',
-'eu.egi.mpi.complexjob.CREAMCE-JobMonit',
 'org.nordugrid.ARC-CE-monitor',
 'org.nordugrid.ARC-CE-clean',
 ];

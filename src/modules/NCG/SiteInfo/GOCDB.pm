@@ -52,6 +52,8 @@ sub new {
 
     $self->{TIMEOUT} = $self->{DEFAULT_HTTP_TIMEOUT} unless ($self->{TIMEOUT});
 
+    $self->{VO} = 'ops';
+
     $self;
 }
 
@@ -69,8 +71,8 @@ sub getData {
     if ($self->{SCOPE}) {
         $url .= '&scope=' . $self->{SCOPE};
     }
-
     my $req = HTTP::Request->new(GET => $url);
+
     my $res = $self->safeHTTPSCall($ua,$req);
     if (!$res->is_success) {
         $self->error("Could not get results from GOCDB: ".$res->status_line);
@@ -103,6 +105,19 @@ sub getData {
                 next;
             }
         }
+      
+        if ($self->{NODE_MONITORED}) {
+            my $prod;
+            foreach $elem ($site->getElementsByTagName("NODE_MONITORED")) {
+                my $value = $elem->getFirstChild->getNodeValue();
+                if ($value) {
+                    $prod = $value;
+                }
+            }
+            if ($prod && $prod ne $self->{NODE_MONITORED}) {
+                next;
+            }
+        }
 
         foreach $elem ($site->getElementsByTagName("HOSTNAME")) {
             my $value = $elem->getFirstChild->getNodeValue();
@@ -118,8 +133,12 @@ sub getData {
                 my $value = $elem->getFirstChild->getNodeValue();
                 if ($value) {
                     $self->{SITEDB}->addService($hostname, $value);
-
+                    $self->{SITEDB}->addVO($hostname, $value, $self->{VO});
                     $self->{SITEDB}->siteLDAP($hostname) if ($value eq 'Site-BDII');
+                    if ($value eq 'SRM') {
+                        $self->{SITEDB}->addService($hostname, 'SRMv2');
+                        $self->{SITEDB}->addVO($hostname, 'SRMv2', $self->{VO});
+                    }
 
                     $serviceType = $value;
                 }

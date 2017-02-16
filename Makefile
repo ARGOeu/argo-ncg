@@ -1,6 +1,6 @@
-PKGNAME=nagios-plugins-globus
+PKGNAME=argo-ncg
 SPECFILE=${PKGNAME}.spec
-FILES=Makefile ${SPECFILE} src/*
+FILES=Makefile ${SPECFILE} src/* config/*
 
 PKGVERSION=$(shell grep -s '^Version:' $(SPECFILE) | sed -e 's/Version: *//')
 

@@ -26,8 +26,8 @@ use File::Path;
 use Sys::Hostname;
 use Fcntl 'LOCK_EX', 'LOCK_NB';
 
-my $DEFAULT_CONFIG_FILE = "/etc/ncg/ncg.conf";
-my $DEFAULT_PID_FILE = "/var/run/ncg/ncg.pid";
+my $DEFAULT_CONFIG_FILE = "/etc/argo-ncg/ncg.conf";
+my $DEFAULT_PID_FILE = "/var/run/argo-ncg/ncg.pid";
 my $DEFAULT_TIMEOUT = 900;
 my $VERBOSE;
 my $DEBUG;
@@ -554,7 +554,7 @@ unless ($outputDir) {
         $outputDir = $conf->{"NCG::ConfigGen"}->{"Nagios"}->{OUTPUT_DIR};
         $outputDir =~ s/\/\s*$//;
     } else {
-        $outputDir = "/etc/nagios/wlcg.d";
+        $outputDir = "/etc/nagios/argo-ncg.d";
     }
 }
 unless($finalOutputDir) {

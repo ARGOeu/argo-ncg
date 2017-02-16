@@ -8,7 +8,6 @@ define service{
         notifications_enabled           1
         event_handler_enabled           1
         flap_detection_enabled          <ENABLE_FLAP_DETECTION>
-        failure_prediction_enabled      0
         process_perf_data               1
         retain_status_information       1
         retain_nonstatus_information    1

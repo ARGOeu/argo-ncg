@@ -30,8 +30,6 @@ sub new {
     my $class  = ref($proto) || $proto;
     my $self =  $class->SUPER::new(@_);
 
-    $self->{LOCAL_METRIC_STORE} = 0
-        unless (defined $self->{LOCAL_METRIC_STORE});
     $self->{INCLUDE_MSG_CHECKS_RECV} = 1
         unless (defined $self->{INCLUDE_MSG_CHECKS_RECV});
     $self->{INCLUDE_MSG_CHECKS_SEND} = 1
@@ -109,13 +107,6 @@ sub _analyzeNAGIOS {
     if ($self->{SITEDB}->hasService($hostname, "NAGIOS")) {
         # NRPE service
         $self->{SITEDB}->removeMetric($hostname, undef, "org.nagios.ProcessNSCA") if (!$self->{NRPE_UI});
-        # local metric store checks
-        if (!$self->{LOCAL_METRIC_STORE}) {
-            $self->{SITEDB}->removeMetric($hostname, undef, "org.egee.SendToMetricStore");
-            $self->{SITEDB}->removeMetric($hostname, undef, "ch.cern.sam.POEMSync");
-            $self->{SITEDB}->removeMetric($hostname, undef, "org.egee.ATPSync");
-            $self->{SITEDB}->removeMetric($hostname, undef, "org.egee.MrsDirSize");
-        }
         # let's gather list of sites
         # needed for remote metrics and GOCDB downtimes
         my $siteList = join ( ',', keys %{$self->{MULTI_SITE_SITES}});
@@ -341,6 +332,11 @@ sub _analyzeURLs {
             $self->{SITEDB}->hostAttribute($hostname, "QCG-NOTIFICATION_PORT", $3);
         }
     }   
+    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "globus-GSISSHD_URL")) {
+        if ($attr =~ /(\S+?:\/\/)?([-_.A-Za-z0-9]+):(\d+)/ ) {
+            $self->{SITEDB}->hostAttribute($hostname, "GSISSH_PORT", $3);
+        }
+    }
 
     my @unicoreServices = ("unicore6.Gateway", "unicore6.ServiceOrchestrator", "unicore6.StorageManagement", "unicore6.TargetSystemFactory", "unicore6.UVOSAssertionQueryService", "unicore6.WorkflowFactory", "unicore6.StorageFactory");
     foreach my $unicoreService (@unicoreServices) {
@@ -360,28 +356,42 @@ sub _analyzeURLs {
     }
 
     if ($attr = $self->{SITEDB}->hostAttribute($hostname, "eu.egi.cloud.vm-management.occi_URL")) {
-        eval {
-            my $occiHash = {};
-            my $occiurl = url($attr);
-            $self->{SITEDB}->hostAttribute($hostname, 'OCCI_PORT', $occiurl->port);
-            my @params = $occiurl->query_form;
-            for (my $i=0; $i < @params; $i++) {
-                my $key = $params[$i++];
-                $key =~ s/^amp;//i;
-                $key = 'OCCI_' . uc($key);
-                my $value = $params[$i];
-                $self->{SITEDB}->hostAttribute($hostname, $key, $value);
-                $occiHash->{$key} = $value;
-            }
-            $self->{SITEDB}->hostAttribute($hostname, 'OCCI_SCHEME', $occiurl->scheme);
-            $self->{SITEDB}->hostAttribute($hostname, 'OCCI_URL', $occiurl->scheme."://".$occiurl->host.":".$occiurl->port);
+        eval {my $occiHash = {};
+        my $occiurl = url($attr);
+        $self->{SITEDB}->hostAttribute($hostname, 'OCCI_PORT', $occiurl->port);
+        my @params = $occiurl->query_form;
+        for (my $i=0; $i < @params; $i++) {
+            my $key = $params[$i++];
+            $key =~ s/^amp;//i;
+            $key = 'OCCI_' . uc($key);
+            my $value = $params[$i];
+            $self->{SITEDB}->hostAttribute($hostname, $key, $value);
+            $occiHash->{$key} = $value;
+        }
+        $self->{SITEDB}->hostAttribute($hostname, 'OCCI_SCHEME', $occiurl->scheme);
+        $self->{SITEDB}->hostAttribute($hostname, 'OCCI_URL', $occiurl->scheme."://".$occiurl->host.":".$occiurl->port.$occiurl->epath);
+        if (!exists $occiHash->{OCCI_RESOURCE}) {
             if (!exists $occiHash->{OCCI_PLATFORM}) {
                 $self->{SITEDB}->hostAttribute($hostname, 'OCCI_RESOURCE', 'small');
             } else {
-                if (!exists $occiHash->{OCCI_RESOURCE}) {
-                    $self->{SITEDB}->hostAttribute($hostname, 'OCCI_RESOURCE', 'm1-tiny');
-                }
+                $self->{SITEDB}->hostAttribute($hostname, 'OCCI_RESOURCE', 'm1-tiny');
             }
+        }};
+    }
+    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "org.openstack.nova_URL")) {
+        eval {
+        my $occiurl = url($attr);
+        $self->{SITEDB}->hostAttribute($hostname, 'OS_KEYSTONE_PORT', $occiurl->port);
+        $self->{SITEDB}->hostAttribute($hostname, 'OS_KEYSTONE_HOST', $occiurl->host);
+        my @params = $occiurl->query_form;
+        for (my $i=0; $i < @params; $i++) {
+            my $key = $params[$i++];
+            $key =~ s/^amp;//i;
+            $key = 'OS_' . uc($key);
+            my $value = $params[$i];
+            $self->{SITEDB}->hostAttribute($hostname, $key, $value);
+        }
+        $self->{SITEDB}->hostAttribute($hostname, 'OS_KEYSTONE_URL', $occiurl->scheme."://".$occiurl->host.":".$occiurl->port.$occiurl->epath);
         };
     }
     if ($attr = $self->{SITEDB}->hostAttribute($hostname, "eu.egi.cloud.storage-management.cdmi_URL")) {
@@ -416,7 +426,7 @@ sub _setDefaultPorts {
 	$self->{SITEDB}->globalAttribute("WMPROXY_PORT", 7443);
 	$self->{SITEDB}->globalAttribute("SRM1_PORT", 8443);
 	$self->{SITEDB}->globalAttribute("SRM2_PORT", 8446);
-	$self->{SITEDB}->globalAttribute("VOBOX_PORT", 1975);
+	$self->{SITEDB}->globalAttribute("GSISSH_PORT", 1975);
 	$self->{SITEDB}->globalAttribute("FTS_PORT", 8443);
 	$self->{SITEDB}->globalAttribute("GRIDICE_PORT", 2136);
 	$self->{SITEDB}->globalAttribute("CREAM_PORT", 8443);
@@ -535,10 +545,6 @@ reference that can contain following elements:
   send results to the rest of the world over MSG.
   (default: true)
 
-  LOCAL_METRIC_STORE - if true configuration for storing results to
-  local metric store.
-  (default: false)
-  
   INCLUDE_PROXY_CHECKS - if true configuration for proxy generation
   will be generated. Set this option to 0 if there are no probes which
   require valid proxy certificate.
