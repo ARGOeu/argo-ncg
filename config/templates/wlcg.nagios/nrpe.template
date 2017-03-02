@@ -5,7 +5,7 @@ define service{
         servicegroups                   nagios
         contact_groups                  nagios-site
         check_command                   ncg_check_native_noargs!$USER1$/check_nrpe!10
-        normal_check_interval           10
+        check_interval           10
         retry_check_interval            2
         max_check_attempts              4
         obsess_over_service             0
@@ -18,7 +18,7 @@ define service{
         servicegroups                   nagios
         contact_groups                  nagios-site
         check_command                   ncg_check_nrpe_service!<NRPE_UI>!check_push_nrpe!120
-        normal_check_interval           30
+        check_interval           30
         retry_check_interval            5
         max_check_attempts              4
         obsess_over_service             0
