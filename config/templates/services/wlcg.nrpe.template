@@ -5,7 +5,7 @@ define service{
         service_description             <metricName>
         contact_groups                  <contactlist>
         check_command                   ncg_check_nrpe_service!<NRPE_UI>!<nrpecommand>!<timeout>
-        check_interval           <interval>
+        check_interval                  <interval>
         retry_check_interval            <retryInterval>
         max_check_attempts              <maxCheckAttempts>
         obsess_over_service             <obsess>
