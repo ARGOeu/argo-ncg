@@ -5,7 +5,7 @@ define service{
         service_description             <servicename>
         contact_groups                  <contactlist>
         check_command                   ncg_check_passive!Last known result state is "$LASTSERVICESTATE$" is at least a day old.
-        normal_check_interval           <interval>
+        check_interval                  <interval>
         max_check_attempts              <maxCheckAttempts>
         <url>
         <docurl>
