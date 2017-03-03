@@ -5,7 +5,7 @@
 
 Summary: ARGO Nagios config generator
 Name: argo-ncg
-Version: 0.3.2
+Version: 0.3.3
 Release: 1%{?dist}
 License: ASL 2.0
 Group: Network/Monitoring
@@ -105,6 +105,8 @@ if [ -f /etc/init.d/ncg ] ; then
 fi
 
 %changelog
+* Fri Mar 3 2017 Emir Imamagic <eimamagi@srce.hr> - 0.3.3-1
+- Configuration changes in Nagios 4.3.1
 * Tue Feb 21 2017 Emir Imamagic <eimamagi@srce.hr> - 0.3.2-1
 - Increase org.egee.ImportGocdbDowntimes timeout
 * Fri Feb 17 2017 Emir Imamagic <eimamagi@srce.hr> - 0.3.1-1
