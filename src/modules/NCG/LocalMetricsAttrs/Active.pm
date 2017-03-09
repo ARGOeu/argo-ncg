@@ -293,14 +293,16 @@ sub _analyzeURLs {
             $self->{SITEDB}->hostAttribute($hostname, "BDII_PORT", $3);
         }
     }
-    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "SRMv2_URL")) {
+    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "SRM_URL")) {
         if ($attr =~ /(\S+?:\/\/)?([-_.A-Za-z0-9]+):(\d+)/ ) {
             $self->{SITEDB}->hostAttribute($hostname, "SRM2_PORT", $3);
         }
     }
     if ($attr = $self->{SITEDB}->hostAttribute($hostname, "CREAM-CE_URL")) {
-        if ($attr =~ /(\S+?:\/\/)?([-_.A-Za-z0-9]+):(\d+)/ ) {
-            $self->{SITEDB}->hostAttribute($hostname, "CREAM_PORT", $3);
+        if ($attr =~ /([-_.A-Za-z0-9]+):(\d+)\/(cream-([-_.A-Za-z0-9]+?)-([-_.A-Za-z0-9@]+))$/ ) {
+            $self->{SITEDB}->hostAttribute($hostname, "CREAM_PORT",  $2);
+            $self->{SITEDB}->hostAttribute($hostname, "CREAM_LRMS",  $4);
+            $self->{SITEDB}->hostAttribute($hostname, "CREAM_QUEUE", $5);
         }
     }   
     if ($attr = $self->{SITEDB}->hostAttribute($hostname, "MyProxy_URL")) {

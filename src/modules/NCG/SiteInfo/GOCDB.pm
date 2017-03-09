@@ -158,6 +158,26 @@ sub getData {
                         }
                     }
                 }
+                foreach my $endpoint ($site->getElementsByTagName("ENDPOINT")) {
+                    my $monitored = "";
+                    foreach $elem ($site->getElementsByTagName("ENDPOINT_MONITORED")) {
+                        my $value = $elem->getFirstChild->getNodeValue();
+                        if ($value) {
+                            $monitored = $value;
+                        }
+                    }
+                    if ( $monitored eq 'Y' ) {
+                        foreach $elem ($endpoint->getElementsByTagName("URL")) {
+                            my $child = $elem->getFirstChild;
+                            if ($child) {
+                                my $value = $child->getNodeValue();
+                                if ($value) {
+                                    $self->{SITEDB}->hostAttribute($hostname, $serviceType."_URL", $value);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
