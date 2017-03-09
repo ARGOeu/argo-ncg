@@ -211,7 +211,6 @@ sub getData {
                 $port = $2;
 
                 if($entry->get_value('GlueServiceVersion') && $entry->get_value('GlueServiceVersion') eq '2.2.0') {
-                    # SRMv2
                     $self->{SITEDB}->hostAttribute($hostname, "SRM2_PORT", $port);
                 } else { # Allow anything else to be SRMv1 to deal with bad information providers
                     $self->{SITEDB}->hostAttribute($hostname, "SRM1_PORT", $port);
