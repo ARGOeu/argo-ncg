@@ -22,6 +22,7 @@ use warnings;
 use NCG::LocalMetrics;
 use vars qw(@ISA);
 use JSON; 
+use LWP::UserAgent;
 
 @ISA=("NCG::LocalMetrics");
 
