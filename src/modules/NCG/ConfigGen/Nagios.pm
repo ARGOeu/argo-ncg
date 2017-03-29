@@ -889,7 +889,11 @@ sub _getHostCheckType {
 	my $checkType;
 
     if ( $self->{CHECK_HOSTS} ) {
-        $checkType = "ncg_check_host_alive";
+        if ( $self->{SITEDB}->hostAttribute($hostname, "CHECK_HOST_NRPE") ) {
+            $checkType = "ncg_check_host_nrpe";
+        } else {
+            $checkType = "ncg_check_host_alive";
+        }
     } else {
         $checkType = "ncg_check_host_dummy";
     }
