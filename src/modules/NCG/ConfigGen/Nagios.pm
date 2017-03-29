@@ -443,6 +443,11 @@ sub _checkRobotCredentials {
 
     $self->_setVoAttributes('ROBOT_CERT');
     $self->_setVoAttributes('ROBOT_KEY');
+
+    if ( defined $self->{SITEDB} ) {
+        $self->{SITEDB}->globalAttribute("NAGIOS_HOST_CERT", $self->{ROBOT_CERT});
+        $self->{SITEDB}->globalAttribute("NAGIOS_HOST_KEY", $self->{ROBOT_KEY});
+    }
 }
 
 #############################
