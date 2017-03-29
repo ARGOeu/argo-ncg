@@ -334,6 +334,16 @@ sub _analyzeURLs {
             $self->{SITEDB}->hostAttribute($hostname, "QCG-NOTIFICATION_PORT", $3);
         }
     }   
+    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "ngi.SAM_URL")) {
+        if ($attr =~ /(\S+?:\/\/)?([-_.A-Za-z0-9]+):(\d+)/ ) {
+            $self->{SITEDB}->hostAttribute($hostname, "SAM_PORT", $3);
+        }
+    }
+    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "vo.SAM_URL")) {
+        if ($attr =~ /(\S+?:\/\/)?([-_.A-Za-z0-9]+):(\d+)/ ) {
+            $self->{SITEDB}->hostAttribute($hostname, "SAM_PORT", $3);
+        }
+    }
     if ($attr = $self->{SITEDB}->hostAttribute($hostname, "globus-GSISSHD_URL")) {
         if ($attr =~ /(\S+?:\/\/)?([-_.A-Za-z0-9]+):(\d+)/ ) {
             $self->{SITEDB}->hostAttribute($hostname, "GSISSH_PORT", $3);
