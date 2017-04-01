@@ -505,7 +505,7 @@ sub _setStaticAttrs {
     $self->{SITEDB}->globalAttribute("UNICORE_JOB_FILE", '/etc/nagios/unicore/UNICORE_Job.u');
     
     $self->{SITEDB}->globalAttribute("TOP_BDII", $self->{BDII_HOST});
-    $self->{SITEDB}->globalAttribute("NAGIOS_HOST_KEYSTORE", '/etc/nagios/globus/hostcert.ks');
+    $self->{SITEDB}->globalAttribute("KEYSTORE", '/etc/nagios/unicore/keystore.jks');
     $self->{SITEDB}->globalAttribute("TRUSTSTORE", '/etc/nagios/globus/truststore.ts');
 }
 
