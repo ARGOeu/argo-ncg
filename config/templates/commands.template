@@ -31,6 +31,11 @@ define command{
         command_line                    $USER1$/check_dummy 0 "Host OK"
 }
 
+define command{
+        command_name                    ncg_check_host_nrpe
+        command_line                    $USER1$/check_nrpe -H $_HOSTMASTER_HOST$ -c check_ping -a $HOSTNAME$
+}
+
 
 #####
 # Services commands

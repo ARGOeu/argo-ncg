@@ -293,14 +293,16 @@ sub _analyzeURLs {
             $self->{SITEDB}->hostAttribute($hostname, "BDII_PORT", $3);
         }
     }
-    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "SRMv2_URL")) {
+    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "SRM_URL")) {
         if ($attr =~ /(\S+?:\/\/)?([-_.A-Za-z0-9]+):(\d+)/ ) {
             $self->{SITEDB}->hostAttribute($hostname, "SRM2_PORT", $3);
         }
     }
     if ($attr = $self->{SITEDB}->hostAttribute($hostname, "CREAM-CE_URL")) {
-        if ($attr =~ /(\S+?:\/\/)?([-_.A-Za-z0-9]+):(\d+)/ ) {
-            $self->{SITEDB}->hostAttribute($hostname, "CREAM_PORT", $3);
+        if ($attr =~ /([-_.A-Za-z0-9]+):(\d+)\/(cream-([-_.A-Za-z0-9]+?)-([-_.A-Za-z0-9@]+))$/ ) {
+            $self->{SITEDB}->hostAttribute($hostname, "CREAM_PORT",  $2);
+            $self->{SITEDB}->hostAttribute($hostname, "CREAM_LRMS",  $4);
+            $self->{SITEDB}->hostAttribute($hostname, "CREAM_QUEUE", $5);
         }
     }   
     if ($attr = $self->{SITEDB}->hostAttribute($hostname, "MyProxy_URL")) {
@@ -332,6 +334,16 @@ sub _analyzeURLs {
             $self->{SITEDB}->hostAttribute($hostname, "QCG-NOTIFICATION_PORT", $3);
         }
     }   
+    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "ngi.SAM_URL")) {
+        if ($attr =~ /(\S+?:\/\/)?([-_.A-Za-z0-9]+):(\d+)/ ) {
+            $self->{SITEDB}->hostAttribute($hostname, "SAM_PORT", $3);
+        }
+    }
+    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "vo.SAM_URL")) {
+        if ($attr =~ /(\S+?:\/\/)?([-_.A-Za-z0-9]+):(\d+)/ ) {
+            $self->{SITEDB}->hostAttribute($hostname, "SAM_PORT", $3);
+        }
+    }
     if ($attr = $self->{SITEDB}->hostAttribute($hostname, "globus-GSISSHD_URL")) {
         if ($attr =~ /(\S+?:\/\/)?([-_.A-Za-z0-9]+):(\d+)/ ) {
             $self->{SITEDB}->hostAttribute($hostname, "GSISSH_PORT", $3);
@@ -493,7 +505,7 @@ sub _setStaticAttrs {
     $self->{SITEDB}->globalAttribute("UNICORE_JOB_FILE", '/etc/nagios/unicore/UNICORE_Job.u');
     
     $self->{SITEDB}->globalAttribute("TOP_BDII", $self->{BDII_HOST});
-    $self->{SITEDB}->globalAttribute("NAGIOS_HOST_KEYSTORE", '/etc/nagios/globus/hostcert.ks');
+    $self->{SITEDB}->globalAttribute("KEYSTORE", '/etc/nagios/unicore/keystore.jks');
     $self->{SITEDB}->globalAttribute("TRUSTSTORE", '/etc/nagios/globus/truststore.ts');
 }
 

@@ -443,6 +443,11 @@ sub _checkRobotCredentials {
 
     $self->_setVoAttributes('ROBOT_CERT');
     $self->_setVoAttributes('ROBOT_KEY');
+
+    if ( defined $self->{SITEDB} ) {
+        $self->{SITEDB}->globalAttribute("NAGIOS_HOST_CERT", $self->{ROBOT_CERT});
+        $self->{SITEDB}->globalAttribute("NAGIOS_HOST_KEY", $self->{ROBOT_KEY});
+    }
 }
 
 #############################
@@ -889,7 +894,11 @@ sub _getHostCheckType {
 	my $checkType;
 
     if ( $self->{CHECK_HOSTS} ) {
-        $checkType = "ncg_check_host_alive";
+        if ( $self->{SITEDB}->hostAttribute($hostname, "CHECK_HOST_NRPE") ) {
+            $checkType = "ncg_check_host_nrpe";
+        } else {
+            $checkType = "ncg_check_host_alive";
+        }
     } else {
         $checkType = "ncg_check_host_dummy";
     }

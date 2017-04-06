@@ -206,12 +206,10 @@ sub getData {
                 next if ($3 && $3 eq '1');
                 $self->{SITEDB}->addHost($hostname) if ($self->{ADD_HOSTS});
                 $self->{SITEDB}->addService($hostname, "SRM");
-                $self->{SITEDB}->addService($hostname, "SRMv2");
 
                 foreach my $attr ($entry->get_value('GlueServiceAccessControlRule')) {
                     my $voname = lc($attr);
                     $self->{SITEDB}->addVO($hostname, "SRM", $voname);
-                    $self->{SITEDB}->addVO($hostname, "SRMv2", $voname);
                 }
             }
         }

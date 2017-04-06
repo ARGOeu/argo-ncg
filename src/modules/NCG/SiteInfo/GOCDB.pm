@@ -135,10 +135,6 @@ sub getData {
                     $self->{SITEDB}->addService($hostname, $value);
                     $self->{SITEDB}->addVO($hostname, $value, $self->{VO});
                     $self->{SITEDB}->siteLDAP($hostname) if ($value eq 'Site-BDII');
-                    if ($value eq 'SRM') {
-                        $self->{SITEDB}->addService($hostname, 'SRMv2');
-                        $self->{SITEDB}->addVO($hostname, 'SRMv2', $self->{VO});
-                    }
 
                     $serviceType = $value;
                 }
@@ -159,6 +155,26 @@ sub getData {
                         my $value = $child->getNodeValue();
                         if ($value) {
                             $self->{SITEDB}->hostAttribute($hostname, $serviceType."_URL", $value);
+                        }
+                    }
+                }
+                foreach my $endpoint ($site->getElementsByTagName("ENDPOINT")) {
+                    my $monitored = "";
+                    foreach $elem ($site->getElementsByTagName("ENDPOINT_MONITORED")) {
+                        my $value = $elem->getFirstChild->getNodeValue();
+                        if ($value) {
+                            $monitored = $value;
+                        }
+                    }
+                    if ( $monitored eq 'Y' ) {
+                        foreach $elem ($endpoint->getElementsByTagName("URL")) {
+                            my $child = $elem->getFirstChild;
+                            if ($child) {
+                                my $value = $child->getNodeValue();
+                                if ($value) {
+                                    $self->{SITEDB}->hostAttribute($hostname, $serviceType."_URL", $value);
+                                }
+                            }
                         }
                     }
                 }
