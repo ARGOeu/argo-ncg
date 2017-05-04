@@ -105,6 +105,8 @@ if [ -f /etc/init.d/ncg ] ; then
 fi
 
 %changelog
+* Thu May 4 2017 Emir Imamagic <eimamagi@srce.hr> - 0.3.3-1
+- Version bump
 * Thu Apr 6 2017 Emir Imamagic <eimamagi@srce.hr> - 0.3.2-1
 - Version bump
 * Fri Mar 3 2017 Emir Imamagic <eimamagi@srce.hr> - 0.3.1-1
