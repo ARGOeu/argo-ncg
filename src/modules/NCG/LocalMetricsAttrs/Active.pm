@@ -349,6 +349,11 @@ sub _analyzeURLs {
             $self->{SITEDB}->hostAttribute($hostname, "GSISSH_PORT", $3);
         }
     }
+    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "FTS_URL")) {
+        if ($attr =~ /(\S+?:\/\/)?([-_.A-Za-z0-9]+):(\d+)/ ) {
+            $self->{SITEDB}->hostAttribute($hostname, "FTS_PORT", $3);
+        }
+    }
 
     my @unicoreServices = ("unicore6.Gateway", "unicore6.ServiceOrchestrator", "unicore6.StorageManagement", "unicore6.TargetSystemFactory", "unicore6.UVOSAssertionQueryService", "unicore6.WorkflowFactory", "unicore6.StorageFactory");
     foreach my $unicoreService (@unicoreServices) {
@@ -439,7 +444,7 @@ sub _setDefaultPorts {
 	$self->{SITEDB}->globalAttribute("SRM1_PORT", 8443);
 	$self->{SITEDB}->globalAttribute("SRM2_PORT", 8446);
 	$self->{SITEDB}->globalAttribute("GSISSH_PORT", 1975);
-	$self->{SITEDB}->globalAttribute("FTS_PORT", 8443);
+	$self->{SITEDB}->globalAttribute("FTS_PORT", 8446);
 	$self->{SITEDB}->globalAttribute("GRIDICE_PORT", 2136);
 	$self->{SITEDB}->globalAttribute("CREAM_PORT", 8443);
     $self->{SITEDB}->globalAttribute("QCG-COMPUTING_PORT", 19000);
