@@ -84,6 +84,9 @@ sub getData
     if ($self->{PROD_STATUS}) {
         $url .= '&production_status=' . $self->{PROD_STATUS};
     }
+    if ($self->{SCOPE}) {
+        $url .= '&scope=' . $self->{SCOPE};
+    }
 
     my $req = HTTP::Request->new(GET => $url);
     my $res = $self->safeHTTPSCall($ua,$req);
