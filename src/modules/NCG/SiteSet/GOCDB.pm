@@ -48,6 +48,10 @@ sub new {
     if (! exists $self->{CERT_STATUS}) {
         $self->{CERT_STATUS} = 'Certified';
     }
+
+    if (! exists $self->{URL_TYPE}) {
+        $self->{URL_TYPE} = 'ROOT';
+    }
     $self->{TIMEOUT} = $self->{DEFAULT_HTTP_TIMEOUT} unless ($self->{TIMEOUT});
 
     $self;
@@ -68,37 +72,56 @@ sub getData
         }
     }
 
-    my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1);
-    $ua->agent("NCG::SiteSet::GOCDB");
+    my $content;
 
-    my $url = $self->{GOCDB_ROOT_URL} . $GOCDB_GET_METHOD;
-    if ($self->{ROC}) {
-        $url .= '&roc=' . $self->{ROC};
-    }
-    if ($self->{COUNTRY}) {
-        $url .= '&country=' . $self->{COUNTRY};
-    }
-    if ($self->{CERT_STATUS}) {
-        $url .= '&certification_status=' . $self->{CERT_STATUS};
-    }
-    if ($self->{PROD_STATUS}) {
-        $url .= '&production_status=' . $self->{PROD_STATUS};
-    }
-    if ($self->{SCOPE}) {
-        $url .= '&scope=' . $self->{SCOPE};
-    }
+    if ( $self->{URL_TYPE} eq 'FILE' ) {
+        my $fileHndl;
+        local $/=undef;
+        if (!open ($fileHndl, $self->{GOCDB_ROOT_URL})) {
+            $self->error("Cannot open GOCDB file!");
+            return 0;
+        }
+        $content = <$fileHndl>;
+        close $fileHndl;
+    } else {
+        my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1);
+        $ua->agent("NCG::SiteSet::GOCDB");
 
-    my $req = HTTP::Request->new(GET => $url);
-    my $res = $self->safeHTTPSCall($ua,$req);
-    if (!$res->is_success) {
-        $self->error("Could not get results from GOCDB: ".$res->status_line);
-        return 0;
-    }
+        my $url;
 
+        if ( $self->{URL_TYPE} eq 'ROOT' ) {
+            $url = $self->{GOCDB_ROOT_URL} . $GOCDB_GET_METHOD;
+            if ($self->{ROC}) {
+                $url .= '&roc=' . $self->{ROC};
+            }
+            if ($self->{COUNTRY}) {
+                $url .= '&country=' . $self->{COUNTRY};
+            }
+            if ($self->{CERT_STATUS}) {
+                $url .= '&certification_status=' . $self->{CERT_STATUS};
+            }
+            if ($self->{PROD_STATUS}) {
+                $url .= '&production_status=' . $self->{PROD_STATUS};
+            }
+            if ($self->{SCOPE}) {
+                $url .= '&scope=' . $self->{SCOPE};
+            }
+        } else {
+            $url = $self->{GOCDB_ROOT_URL};
+        }
+
+        my $req = HTTP::Request->new(GET => $url);
+        my $res = $self->safeHTTPSCall($ua,$req);
+        if (!$res->is_success) {
+            $self->error("Could not get results from GOCDB: ".$res->status_line);
+            return 0;
+        }
+        $content = $res->content;
+    }
     my $parser = new XML::DOM::Parser(ErrorContext => 2);
     my $doc;
     eval {
-        $doc = $parser->parse($res->content);
+        $doc = $parser->parse($content);
     };
     if ($@) {
         $self->error("Error parsing XML response: ".$@);
