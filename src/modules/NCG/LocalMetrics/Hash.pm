@@ -413,12 +413,12 @@ $WLCG_SERVICE->{'org.egee.CheckConfig'}->{flags}->{NOHOSTNAME} = 1;
 $WLCG_SERVICE->{'org.egee.CheckConfig'}->{flags}->{NOARGS} = 1;
 $WLCG_SERVICE->{'org.egee.CheckConfig'}->{flags}->{PNP} = 1;
 
-$WLCG_SERVICE->{'org.nagios.MsgDirSize'}->{probe} = "org.nagiosexchange/check_dirsize.sh";
+$WLCG_SERVICE->{'org.nagios.MsgDirSize'}->{probe} = "check_dirsize.sh";
 $WLCG_SERVICE->{'org.nagios.MsgDirSize'}->{config}->{timeout} = 15;
 $WLCG_SERVICE->{'org.nagios.MsgDirSize'}->{config}->{interval} = 60;
 $WLCG_SERVICE->{'org.nagios.MsgDirSize'}->{config}->{retryInterval} = 5;
 $WLCG_SERVICE->{'org.nagios.MsgDirSize'}->{config}->{maxCheckAttempts} = 3;
-$WLCG_SERVICE->{'org.nagios.MsgDirSize'}->{config}->{path} = $NCG::NCG_PROBES_PATH_GRIDMON;
+$WLCG_SERVICE->{'org.nagios.MsgDirSize'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/nagiosexchange';
 $WLCG_SERVICE->{'org.nagios.MsgDirSize'}->{flags}->{NOHOSTNAME} = 1;
 $WLCG_SERVICE->{'org.nagios.MsgDirSize'}->{flags}->{PNP} = 1;
 $WLCG_SERVICE->{'org.nagios.MsgDirSize'}->{parameter}->{'-d'} = '/var/spool/msg-nagios-bridge';
@@ -448,8 +448,8 @@ $WLCG_SERVICE->{'org.nagios.MsgToHandlerPidFile'}->{parameter}->{-f} = '/var/run
 $WLCG_SERVICE->{'org.nagios.MsgToHandlerPidFile'}->{parameter}->{-w} = '300';
 $WLCG_SERVICE->{'org.nagios.MsgToHandlerPidFile'}->{parameter}->{-c} = '600';
 
-$WLCG_SERVICE->{'org.nagios.NagiosCmdFile'}->{probe} = 'org.nagiosexchange/check_file';
-$WLCG_SERVICE->{'org.nagios.NagiosCmdFile'}->{config}->{path} = $NCG::NCG_PROBES_PATH_GRIDMON;
+$WLCG_SERVICE->{'org.nagios.NagiosCmdFile'}->{probe} = 'check_file';
+$WLCG_SERVICE->{'org.nagios.NagiosCmdFile'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/nagiosexchange';
 $WLCG_SERVICE->{'org.nagios.NagiosCmdFile'}->{config}->{interval} = 15;
 $WLCG_SERVICE->{'org.nagios.NagiosCmdFile'}->{config}->{timeout} = 10;
 $WLCG_SERVICE->{'org.nagios.NagiosCmdFile'}->{config}->{retryInterval} = 3;
@@ -568,7 +568,7 @@ $WLCG_NODETYPE->{internal}->{"NAGIOS"} = [
 'hr.srce.CertLifetime',
 'org.nagios.DiskCheck',
 'org.nagios.ProcessCrond',
-'org.nagios.ProcessNpcd',
+#'org.nagios.ProcessNpcd',
 'org.nagios.ProcessNSCA', # (if NRPE_UI is set)
 'org.egee.ImportGocdbDowntimes',
 'hr.srce.GridProxy-Valid', # (if INCLUDE_PROXY_CHECKS && local, NRPE)
@@ -582,9 +582,9 @@ $WLCG_NODETYPE->{internal}->{"NAGIOS"} = [
 'org.nagios.MsgToHandlerPidFile', # (if INCLUDE_MSG_CHECKS_RECV
 'hr.srce.GoodCEs',
 'hr.srce.GoodSEs',
-'org.nagiosexchange.LogFiles',
+#'org.nagiosexchange.LogFiles',
 'org.nagios.NagiosCmdFile',
-'org.nagiosexchange.NCGLogFiles',
+#'org.nagiosexchange.NCGLogFiles',
 'emi.wms.WMS-JobMonit',
 'org.nordugrid.ARC-CE-monitor',
 'org.nordugrid.ARC-CE-clean',
