@@ -41,48 +41,66 @@ sub new {
         $self->{NODE_MONITORED} = 'Y';
     }
 
-    #if (! exists $self->{PRODUCTION}) {
-    #    $self->{PRODUCTION} = 'Y';
-    #}
-    
     if ($self->{SCOPE} && $self->{SCOPE} !~ /Local/) {
         $self->error("Incorrect SCOPE value, acceptable values are: Local.");
         return;
     }
 
+    if (! exists $self->{URL_TYPE}) {
+        $self->{URL_TYPE} = 'ROOT';
+    }
+
     $self->{TIMEOUT} = $self->{DEFAULT_HTTP_TIMEOUT} unless ($self->{TIMEOUT});
 
-    $self->{VO} = 'ops';
-
+    if (! exists $self->{VO}) {
+        $self->{VO} = 'ops';
+    }
     $self;
 }
 
 sub getData {
     my $self = shift;
     my $sitename = shift || $self->{SITENAME};
+    my $content;
 
-    my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1);
-    $ua->agent("NCG::SiteInfo::GOCDB");
+    if ( $self->{URL_TYPE} eq 'FILE' ) {
+        my $fileHndl;
+        local $/=undef;
+        if (!open ($fileHndl, $self->{GOCDB_ROOT_URL})) {
+            $self->error("Cannot open GOCDB file!");
+            return 0;
+        }
+        $content = <$fileHndl>;
+        close $fileHndl;
+    } else {
+        my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1);
+        $ua->agent("NCG::SiteInfo::GOCDB");
 
-    my $url = $self->{GOCDB_ROOT_URL} . $GOCDB_GET_METHOD . '&sitename=' . $sitename;
-    if ($self->{NODE_MONITORED}) {
-        $url .= '&monitored=' . $self->{NODE_MONITORED};
+        my $url;
+        if ( $self->{URL_TYPE} eq 'ROOT' ) {
+            $url = $self->{GOCDB_ROOT_URL} . $GOCDB_GET_METHOD . '&sitename=' . $sitename;
+            if ($self->{NODE_MONITORED}) {
+                $url .= '&monitored=' . $self->{NODE_MONITORED};
+            }
+            if ($self->{SCOPE}) {
+                $url .= '&scope=' . $self->{SCOPE};
+            }
+        } else {
+            $url = $self->{GOCDB_ROOT_URL};
+        }
+        my $req = HTTP::Request->new(GET => $url);
+
+        my $res = $self->safeHTTPSCall($ua,$req);
+        if (!$res->is_success) {
+            $self->error("Could not get results from GOCDB: ".$res->status_line);
+            return 0;
+        }
+        $content = $res->content;
     }
-    if ($self->{SCOPE}) {
-        $url .= '&scope=' . $self->{SCOPE};
-    }
-    my $req = HTTP::Request->new(GET => $url);
-
-    my $res = $self->safeHTTPSCall($ua,$req);
-    if (!$res->is_success) {
-        $self->error("Could not get results from GOCDB: ".$res->status_line);
-        return 0;
-    }
-
     my $parser = new XML::DOM::Parser(ErrorContext => 2);
     my $doc;
     eval {
-        $doc = $parser->parse($res->content);
+        $doc = $parser->parse($content);
     };
     if ($@) {
         $self->error("Error parsing XML response: ".$@);
@@ -92,6 +110,17 @@ sub getData {
     foreach my $site ($doc->getElementsByTagName("SERVICE_ENDPOINT")) {
         my $elem;
         my $hostname;
+        my $sesitename;
+
+        foreach $elem ($site->getElementsByTagName("SITENAME")) {
+            my $value = $elem->getFirstChild->getNodeValue();
+            if ($value) {
+                $sesitename = $value;
+            }
+        }
+        if ( $sesitename ne $sitename ) {
+            next;
+        }
 
         if ($self->{PRODUCTION}) {
             my $prod;
