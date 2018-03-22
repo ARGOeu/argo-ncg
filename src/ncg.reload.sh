@@ -21,7 +21,7 @@ revert_config_and_exit () {
 }
 
 # check if nagios is running at all
-/sbin/service nagios status 2>&1 > /dev/null
+service nagios status 2>&1 > /dev/null
 # status will return 1 if not running
 if [ $? -ne 0 ]; then
     NAGIOS_RUNNING=0
