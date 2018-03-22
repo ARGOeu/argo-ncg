@@ -6,7 +6,7 @@ define service{
         contact_groups                  <contactlist>
         check_command                   ncg_check_passive!This metric is part of <parent> bundle and cannot be executed independently.
         check_interval                  <interval>
-        retry_interval            <retryInterval>
+        retry_interval                  <retryInterval>
         max_check_attempts              <maxCheckAttempts>
         obsess_over_service             <obsess>
         <customVars>        
