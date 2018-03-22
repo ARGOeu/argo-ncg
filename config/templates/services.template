@@ -25,7 +25,7 @@ define service{
         active_checks_enabled           0
         passive_checks_enabled          1
         check_interval                  120
-        retry_check_interval            120
+        retry_interval                  120
         max_check_attempts              1
         register                        0
         obsess_over_service             0
