@@ -57,7 +57,7 @@ sub getDataWWW {
     my $self = shift;
     my $url;
 
-    my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1);
+    my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1, ssl_opts => { SSL_ca_path => '/etc/grid-security/certificates' });
     $ua->agent("NCG::LocalMetrics::POEM");
     $url = $self->{POEM_ROOT_URL} . $DEFAULT_POEM_ROOT_URL_SUFFIX;
     my $req = HTTP::Request->new(GET => $url);
