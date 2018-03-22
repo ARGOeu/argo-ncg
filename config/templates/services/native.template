@@ -6,7 +6,7 @@ define service{
         contact_groups                  <contactlist>
         check_command                   <commandName>!<path>/<probe>!<timeout>!<options>
         check_interval                  <interval>
-        retry_check_interval            <retryInterval>
+        retry_interval            <retryInterval>
         max_check_attempts              <maxCheckAttempts>
         obsess_over_service             <obsess>
         <customVars>
