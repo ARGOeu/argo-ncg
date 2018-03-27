@@ -84,7 +84,7 @@ sub getData
         $content = <$fileHndl>;
         close $fileHndl;
     } else {
-        my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1);
+        my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1, ssl_opts => { SSL_ca_path => '/etc/grid-security/certificates' });
         $ua->agent("NCG::SiteSet::GOCDB");
 
         my $url;

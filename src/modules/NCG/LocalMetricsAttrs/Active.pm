@@ -130,6 +130,7 @@ sub _analyzeNAGIOS {
             $self->{SITEDB}->removeMetric($hostname, undef, "org.nagios.ProcessMsgToHandler");
             $self->{SITEDB}->removeMetric($hostname, undef, "org.nagios.MsgToHandlerPidFile");
             $self->{SITEDB}->removeMetric($hostname, undef, "org.nagios.MsgDirSize") if (!$self->{INCLUDE_MSG_CHECKS_SEND});
+            $self->{SITEDB}->removeMetric($hostname, undef, "org.nagios.AmsDirSize") if (!$self->{INCLUDE_MSG_CHECKS_SEND});
         }
         $self->{SITEDB}->removeMetric($hostname, undef, "org.egee.SendToMsg") if (!$self->{INCLUDE_MSG_CHECKS_SEND});
         # local metrics
