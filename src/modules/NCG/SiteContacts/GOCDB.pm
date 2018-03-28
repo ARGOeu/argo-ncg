@@ -141,6 +141,11 @@ sub getData {
     }
 
     my $req = HTTP::Request->new(GET => $url);
+
+    if ( $self->{USERNAME} && $self->{PASSWORD} ) {
+        $req->authorization_basic($self->{USERNAME}, $self->{PASSWORD});
+    }
+
     my $res = $self->safeHTTPSCall($ua,$req);
     if (!$res->is_success) {
         $self->error("Could not get results from GOCDB: ".$res->status_line);
@@ -209,8 +214,14 @@ can contains following elements:
 
   ROC - roc name must be set in case when CONTACT_TYPE is set to 'roc'.
   
-  TIMEOUT - HTTP timeout,
-  (default: DEFAULT_HTTP_TIMEOUT inherited from NCG)
+  TIMEOUT - HTTP timeout
+          - default: DEFAULT_HTTP_TIMEOUT inherited from NCG
+
+  USERNAME - username for basic authentication
+           - default: undefined
+
+  PASSWORD - password for basic authentication
+           - default: undefined
 
 =item C<getData>
 
