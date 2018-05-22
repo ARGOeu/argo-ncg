@@ -30,7 +30,7 @@ fi
 /usr/sbin/ncg.pl --timeout $NCG_TIMEOUT --output-dir=$OUTPUT_DIR_TMP --final-output-dir=/etc/nagios/argo-ncg.d $NCG_OPTIONS $NCG_BACKUP_OPTIONS || revert_config_and_exit
 
 sed "s|/etc/nagios/argo-ncg.d|$OUTPUT_DIR_TMP|" /etc/nagios/nagios.cfg > $CONFIG_FILE_TMP
-/usr/bin/nagios -v $CONFIG_FILE_TMP || revert_config_and_exit
+nagios -v $CONFIG_FILE_TMP || revert_config_and_exit
 
 # remove temp
 rm -rf $CONFIG_FILE_TMP
@@ -41,9 +41,9 @@ mv /etc/nagios/argo-ncg.d /etc/nagios/argo-ncg.d.backup
 mv $OUTPUT_DIR_TMP /etc/nagios/argo-ncg.d
 
 if [ $NAGIOS_RUNNING -eq 1 ]; then
-  /sbin/service nagios reload
+  service nagios reload
 else
   # here we try to start nagios, continue running even if it fails
   echo "Nagios is not running, attempting to start it"
-  /sbin/service nagios start
+  service nagios start
 fi
