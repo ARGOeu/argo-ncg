@@ -102,7 +102,7 @@ define command{
 
 define command {
         command_name handle_service_check
-        command_line /usr/libexec/argo-msg-nagios/handle_service_check  --role=<NAGIOS_ROLE> --tenant=<TENANT> --send-to-msg=<SEND_TO_MSG> && /usr/bin/ams-metric-to-queue --queue /var/spool/argo-nagios-ams-publisher/metrics/ /var/spool/argo-nagios-ams-publisher/metricsdevel/ --service "$_SERVICESERVICE_FLAVOUR$" --hostname "$HOSTNAME$" --metric "$_SERVICEMETRIC_NAME$" --status "$SERVICESTATE$" --summary "$SERVICEOUTPUT$" --message "$LONGSERVICEOUTPUT$" --vofqan "$_SERVICEVO_FQAN$" --voname "$_SERVICEVO$" --roc "$_SERVICEROC$" --servicestatetype "$SERVICESTATETYPE$"
+        command_line /usr/libexec/argo-msg-nagios/handle_service_check  --role=<NAGIOS_ROLE> --tenant=<TENANT> --send-to-msg=<SEND_TO_MSG> && /usr/bin/ams-metric-to-queue --queue /var/spool/argo-nagios-ams-publisher/metrics/ /var/spool/argo-nagios-ams-publisher/metricsdevel/ --service "$_SERVICESERVICE_FLAVOUR$" --hostname "$HOSTNAME$" --metric "$_SERVICEMETRIC_NAME$" --status "$SERVICESTATE$" --summary "$SERVICEOUTPUT$" --message "$LONGSERVICEOUTPUT$" --vofqan "$_SERVICEVO_FQAN$" --voname "$_SERVICEVO$" --roc "$_SERVICEROC$" --servicestatetype "$SERVICESTATETYPE$" --actual_data "$SERVICEPERFDATA$"
 }
 
 define command {
