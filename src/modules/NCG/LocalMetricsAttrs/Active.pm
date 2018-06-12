@@ -379,6 +379,10 @@ sub _analyzeURLs {
     }
 
     if ($attr = $self->{SITEDB}->hostAttribute($hostname, "eu.egi.cloud.vm-management.occi_URL")) {
+        my $port;
+        if ($attr =~ /(\S+?:\/\/)?([-_.A-Za-z0-9]+):(\d+)/ ) {
+           $port = $3;
+        }
         eval {my $occiHash = {};
         my $occiurl = url($attr);
         $self->{SITEDB}->hostAttribute($hostname, 'OCCI_PORT', $occiurl->port);
@@ -392,7 +396,10 @@ sub _analyzeURLs {
             $occiHash->{$key} = $value;
         }
         $self->{SITEDB}->hostAttribute($hostname, 'OCCI_SCHEME', $occiurl->scheme);
-        $self->{SITEDB}->hostAttribute($hostname, 'OCCI_URL', $occiurl->scheme."://".$occiurl->host.":".$occiurl->port.$occiurl->epath);
+        my $occiurlAttr = $occiurl->scheme."://".$occiurl->host;
+        $occiurlAttr .= ":" . $port if ($port);
+        $occiurlAttr .= $occiurl->epath;
+        $self->{SITEDB}->hostAttribute($hostname, 'OCCI_URL', $occiurlAttr);
         if (!exists $occiHash->{OCCI_RESOURCE}) {
             if (!exists $occiHash->{OCCI_PLATFORM}) {
                 $self->{SITEDB}->hostAttribute($hostname, 'OCCI_RESOURCE', 'small');
