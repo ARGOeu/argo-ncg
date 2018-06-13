@@ -14,6 +14,9 @@ Obsoletes: grid-monitoring-config-gen-nagios grid-monitoring-config-gen ncg-metr
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
 Requires: perl-libwww-perl > 5.833-2
+%if 0%{?el7:1}
+Requires: perl(LWP::Protocol::https)
+%endif
 
 %description
 (NULL)
