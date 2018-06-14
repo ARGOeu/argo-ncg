@@ -212,6 +212,26 @@ sub getData {
                     }
                 }
             }
+            foreach $elem ($site->getElementsByTagName("EXTENSIONS")) {
+                foreach my $ext ($elem->getElementsByTagName("EXTENSION")) {
+                    my ($elemInt, $keyInt, $valueInt);
+                    foreach $elemInt ($ext->getElementsByTagName("KEY")) {
+                        my $value = $elemInt->getFirstChild->getNodeValue();
+                        if ($value) {
+                            $keyInt = $value;
+                        }
+                    }
+                    foreach $elemInt ($ext->getElementsByTagName("VALUE")) {
+                        my $value = $elemInt->getFirstChild->getNodeValue();
+                        if ($value) {
+                            $valueInt = $value;
+                        }
+                    }
+                    if ($keyInt && $valueInt) {
+                        $self->{SITEDB}->hostAttribute($hostname, $keyInt, $valueInt);
+                    }
+                }
+            }
         }
 
         if (!$self->{SITEDB}->siteCountry()) {
