@@ -426,19 +426,6 @@ $WLCG_SERVICE->{'org.nagios.MsgDirSize'}->{parameter}->{'-w'} = '10000';
 $WLCG_SERVICE->{'org.nagios.MsgDirSize'}->{parameter}->{'-c'} = '100000';
 $WLCG_SERVICE->{'org.nagios.MsgDirSize'}->{parameter}->{'-f'} = '';
 
-$WLCG_SERVICE->{'org.nagios.AmsDirSize'}->{probe} = "check_dirsize.sh";
-$WLCG_SERVICE->{'org.nagios.AmsDirSize'}->{config}->{timeout} = 15;
-$WLCG_SERVICE->{'org.nagios.AmsDirSize'}->{config}->{interval} = 60;
-$WLCG_SERVICE->{'org.nagios.AmsDirSize'}->{config}->{retryInterval} = 5;
-$WLCG_SERVICE->{'org.nagios.AmsDirSize'}->{config}->{maxCheckAttempts} = 3;
-$WLCG_SERVICE->{'org.nagios.AmsDirSize'}->{config}->{path} = '/usr/libexec/argo-monitoring/probes/nagiosexchange';
-$WLCG_SERVICE->{'org.nagios.AmsDirSize'}->{flags}->{NOHOSTNAME} = 1;
-$WLCG_SERVICE->{'org.nagios.AmsDirSize'}->{flags}->{PNP} = 1;
-$WLCG_SERVICE->{'org.nagios.AmsDirSize'}->{parameter}->{'-d'} = '/var/spool/argo-nagios-ams-publisher';
-$WLCG_SERVICE->{'org.nagios.AmsDirSize'}->{parameter}->{'-w'} = '10000';
-$WLCG_SERVICE->{'org.nagios.AmsDirSize'}->{parameter}->{'-c'} = '100000';
-$WLCG_SERVICE->{'org.nagios.AmsDirSize'}->{parameter}->{'-f'} = '';
-
 $WLCG_SERVICE->{'org.nagios.ProcessMsgToHandler'}->{probe} = 'check_procs';
 $WLCG_SERVICE->{'org.nagios.ProcessMsgToHandler'}->{config}->{path} = $NCG::NCG_PROBES_PATH_NAGIOS;
 $WLCG_SERVICE->{'org.nagios.ProcessMsgToHandler'}->{config}->{interval} = 15;
@@ -602,6 +589,7 @@ $WLCG_NODETYPE->{internal}->{"NAGIOS"} = [
 'emi.wms.WMS-JobMonit',
 'org.nordugrid.ARC-CE-monitor',
 'org.nordugrid.ARC-CE-clean',
+'argo.AMSPublisher-Check',
 ];
 
 $WLCG_NODETYPE->{internal}->{"NRPE"} = [
