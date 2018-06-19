@@ -5,7 +5,7 @@
 
 Summary: ARGO Nagios config generator
 Name: argo-ncg
-Version: 0.4.3
+Version: 0.4.4
 Release: 1%{?dist}
 License: ASL 2.0
 Group: Network/Monitoring
@@ -14,6 +14,10 @@ Obsoletes: grid-monitoring-config-gen-nagios grid-monitoring-config-gen ncg-metr
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
 Requires: perl-libwww-perl > 5.833-2
+Requires: psmisc
+%if 0%{?el7:1}
+Requires: perl(LWP::Protocol::https)
+%endif
 
 %description
 (NULL)

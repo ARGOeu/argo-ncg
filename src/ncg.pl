@@ -262,8 +262,7 @@ sub getConfig {
     my %options = (-ConfigFile => $CONFIG_FILE, -AllowMultiOptions => 1,
                    -InterPolateVars => 1, -InterPolateEnv => 1,
                    -IncludeGlob => 1, -UseApacheInclude => 1, 
-                   -IncludeRelative => 1, -IncludeDirectories => 1, 
-                   -AutoTrue => 1);
+                   -IncludeRelative => 1, -IncludeDirectories => 1);
     my $config = new Config::General(%options);
     if (!$config) {
         alarm(0);

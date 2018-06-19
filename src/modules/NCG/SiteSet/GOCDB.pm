@@ -111,6 +111,11 @@ sub getData
         }
 
         my $req = HTTP::Request->new(GET => $url);
+
+        if ( $self->{USERNAME} && $self->{PASSWORD} ) {
+            $req->authorization_basic($self->{USERNAME}, $self->{PASSWORD});
+        }
+
         my $res = $self->safeHTTPSCall($ua,$req);
         if (!$res->is_success) {
             $self->error("Could not get results from GOCDB: ".$res->status_line);
@@ -208,8 +213,14 @@ can contains following elements:
 
   SUBGRID_EXCLUDE - comma separated list of Subgrids to exclude.
               
-  TIMEOUT - HTTP timeout,
-  (default: DEFAULT_HTTP_TIMEOUT inherited from NCG)
+  TIMEOUT - HTTP timeout
+          - default: DEFAULT_HTTP_TIMEOUT inherited from NCG
+
+  USERNAME - username for basic authentication
+           - default: undefined
+
+  PASSWORD - password for basic authentication
+           - default: undefined
 
 =back
 
