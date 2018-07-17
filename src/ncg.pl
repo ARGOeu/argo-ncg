@@ -26,7 +26,7 @@ use Sys::Hostname;
 use Fcntl 'LOCK_EX', 'LOCK_NB';
 
 my $DEFAULT_CONFIG_FILE = "/etc/argo-ncg/ncg.conf";
-my $DEFAULT_PID_FILE = "/var/run/argo-ncg/ncg.pid";
+my $DEFAULT_PID_FILE = "/var/run/argo-ncg.pid";
 my $DEFAULT_TIMEOUT = 900;
 my $VERBOSE;
 my $DEBUG;
