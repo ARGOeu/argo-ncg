@@ -67,9 +67,6 @@ install --mode=644 modules/NCG.pm $RPM_BUILD_ROOT%{perllib}
 #
 install --directory $RPM_BUILD_ROOT%{templatedir}
 cp -r templates/* $RPM_BUILD_ROOT%{templatedir}
-#
-# config dirqueue
-install --directory $RPM_BUILD_ROOT/var/run/argo-ncg
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -99,7 +96,6 @@ rm -rf $RPM_BUILD_ROOT
 %{perllib}/NCG.pm
 %{perllib}/NCG/
 %{templatedir}/
-%dir %attr(0770,nagios,nagios) /var/run/argo-ncg
 %config(noreplace) %attr(0770,nagios,nagios) /etc/nagios/globus
 
 %pre
