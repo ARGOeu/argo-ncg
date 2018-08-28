@@ -146,7 +146,7 @@ sub getData {
                             $self->{SITEDB}->addVoFqan($vo, $customMetricRef->{vofqan}) unless ($voFqan eq '_ALL_');
                             $self->_addLocalMetric($customMetricRef, $host, $metric, $service);
 
-                            if (exists $customMetricRef->{parent}) {
+                            if (exists $customMetricRef->{parent} && $customMetricRef->{parent}) {
                                 my $parent = $customMetricRef->{parent};
                                 if (exists $self->{METRIC_CONFIG}->{$parent}) {
                                     my $customParentMetricRef = {%{$self->{METRIC_CONFIG}->{$parent}}};
