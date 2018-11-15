@@ -135,7 +135,7 @@ sub getData {
                     my $customMetricRef = {%{$metricRef}};
 
                     # hacks
-                    if ($service eq 'CREAM-CE' && exists $metricRef->{parent} && $metricRef->{parent} eq 'emi.ce.CREAMCE-JobState') {
+                    if ($service eq 'CREAM-CE' && exists $metricRef->{parent} && $metricRef->{parent} && $metricRef->{parent} eq 'emi.ce.CREAMCE-JobState') {
                         $customMetricRef->{parent} = 'emi.cream.CREAMCE-JobState';
                     }                    
 
