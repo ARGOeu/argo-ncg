@@ -20,14 +20,13 @@ use warnings;
 use Config::General;
 use Getopt::Long;
 use NCG::SiteDB;
-use NCG::MetricConfig;
 use File::Copy;
 use File::Path;
 use Sys::Hostname;
 use Fcntl 'LOCK_EX', 'LOCK_NB';
 
 my $DEFAULT_CONFIG_FILE = "/etc/argo-ncg/ncg.conf";
-my $DEFAULT_PID_FILE = "/var/run/argo-ncg/ncg.pid";
+my $DEFAULT_PID_FILE = "/var/run/argo-ncg.pid";
 my $DEFAULT_TIMEOUT = 900;
 my $VERBOSE;
 my $DEBUG;
@@ -168,7 +167,7 @@ sub invokeNCGObjects {
 
     foreach my $confKey ( keys %{$confRef} ) {
         # Skip File modules, they should always be executed the last
-        next if ($confKey eq "File");
+        next if ($confKey eq "File" || $confKey eq "JSON");
 
         # Skip if this is a site config block
         next if ($sites && exists $sites->{$confKey});
@@ -177,6 +176,7 @@ sub invokeNCGObjects {
     }
     
     invokeNCGObject ($conf, $parent, "File", $options);
+    invokeNCGObject ($conf, $parent, "JSON", $options);
     
     1;
 }
@@ -447,6 +447,7 @@ my $CONFIG_FILE;
 my $PID_FILE;
 my $timeout;
 my ($outputDir,$finalOutputDir,$outputDirBackup);
+my $options;
 
 local $SIG{ALRM} = sub {
     print "Timeout occured ($timeout)\n";
@@ -568,11 +569,11 @@ if ( -d $outputDir ) {
     move($outputDir, $outputDirBackup);
 }
 
-my $ncgMetricConfig = NCG::MetricConfig->new();
-$ncgMetricConfig->getData();
+$options->{METRIC_CONFIG} = {};
+invokeNCGObjects ($conf, "NCG::MetricConfig", $options, 1);
 
 # here we're dealing with multisite configuration
-analyzeSites($conf, $CONFIG_FILE, $siteName, $outputDir, $finalOutputDir, $ncgMetricConfig->{METRIC_CONFIG});
+analyzeSites($conf, $CONFIG_FILE, $siteName, $outputDir, $finalOutputDir, $options->{METRIC_CONFIG});
 
 unless ( -f $PID_FILE ) {
     die("Could not open pid file $PID_FILE.\n") unless (open(PID_FILE_HNDL, ">$PID_FILE"));
