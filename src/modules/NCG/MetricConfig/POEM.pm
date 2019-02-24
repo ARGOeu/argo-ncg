@@ -27,7 +27,7 @@ use LWP::UserAgent;
 @ISA=("NCG::MetricConfig");
 
 my $DEFAULT_POEM_ROOT_URL = "http://poem.egi.eu/poem";
-my $DEFAULT_POEM_ROOT_URL_SUFFIX = "/api/0.2/json/metrics";
+my $DEFAULT_POEM_ROOT_URL_SUFFIX = "/api/v2/metrics";
 my $DEFAULT_POEM_TAG = "production";
 sub new
 {
@@ -41,6 +41,10 @@ sub new
     if (! $self->{POEM_TAG}) {
         $self->{POEM_TAG} = $DEFAULT_POEM_TAG;
     }
+    if (! $self->{TOKEN}) {
+        $self->error("Authentication token must be defined.");
+        return;
+    }
 
     $self;
 }
@@ -53,6 +57,7 @@ sub getDataWWW {
     $ua->agent("NCG::MetricConfig::POEM");
     $url = $self->{POEM_ROOT_URL} . $DEFAULT_POEM_ROOT_URL_SUFFIX . "/?tag=" . $self->{POEM_TAG};
     my $req = HTTP::Request->new(GET => $url);
+    $req->header('x-api-key' => $self->{TOKEN});
     my $res = $self->safeHTTPSCall($ua,$req);
     if (!$res->is_success) {
         $self->error("Could not get results from POEM $url: ".$res->status_line);
@@ -159,6 +164,9 @@ reference that can contain following elements:
     
     METRIC_CONFIG - metric configuration structure fetched from
     NCG::MetricConfig module
+
+    TOKEN - token used for POEM API authentication
+    (default: )
 
 =back
 
