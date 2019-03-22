@@ -222,9 +222,12 @@ sub getData {
                         }
                     }
                     foreach $elemInt ($ext->getElementsByTagName("VALUE")) {
-                        my $value = $elemInt->getFirstChild->getNodeValue();
-                        if ($value) {
-                            $valueInt = $value;
+                        my $child = $elemInt->getFirstChild;
+                        if ($child) {
+                            my $value = $child->getNodeValue();
+                            if ($value) {
+                                $valueInt = $value;
+                            }
                         }
                     }
                     if ($keyInt && $valueInt) {
