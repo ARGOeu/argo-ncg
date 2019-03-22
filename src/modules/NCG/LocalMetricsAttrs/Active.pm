@@ -455,7 +455,7 @@ sub _setDefaultPorts {
 	$self->{SITEDB}->globalAttribute("LB_PORT", 9000);
 	$self->{SITEDB}->globalAttribute("WMPROXY_PORT", 7443);
 	$self->{SITEDB}->globalAttribute("SRM1_PORT", 8443);
-	$self->{SITEDB}->globalAttribute("SRM2_PORT", 8446);
+	$self->{SITEDB}->globalAttribute("SRM2_PORT", 8443);
 	$self->{SITEDB}->globalAttribute("GSISSH_PORT", 1975);
 	$self->{SITEDB}->globalAttribute("FTS_PORT", 8446);
         $self->{SITEDB}->globalAttribute("VOMS_PORT", 8443);
