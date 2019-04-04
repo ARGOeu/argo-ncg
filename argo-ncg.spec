@@ -5,7 +5,7 @@
 
 Summary: ARGO Nagios config generator
 Name: argo-ncg
-Version: 0.4.5
+Version: 0.4.6
 Release: 1%{?dist}
 License: ASL 2.0
 Group: Network/Monitoring
