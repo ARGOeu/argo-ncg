@@ -5,7 +5,7 @@
 
 Summary: ARGO Nagios config generator
 Name: argo-ncg
-Version: 0.4.5
+Version: 0.4.6
 Release: 1%{?dist}
 License: ASL 2.0
 Group: Network/Monitoring
@@ -54,8 +54,6 @@ install --directory $RPM_BUILD_ROOT/etc/nagios/argo-ncg.d
 install --directory $RPM_BUILD_ROOT/etc/nagios/globus
 
 cp -r unicore $RPM_BUILD_ROOT/etc/nagios
-install --mode=644 ncg-metric-config.conf $RPM_BUILD_ROOT/etc
-cp -r ncg-metric-config.d $RPM_BUILD_ROOT/etc
 #
 # modules
 #
@@ -73,8 +71,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-/etc/ncg-metric-config.conf
-/etc/ncg-metric-config.d
 %config(noreplace) %{configdir}/ncg.conf.d
 %config(noreplace) %{configdir}/ncg.conf
 %config(noreplace) %{configdir}/ncg.localdb

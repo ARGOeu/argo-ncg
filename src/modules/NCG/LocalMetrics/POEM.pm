@@ -27,7 +27,7 @@ use LWP::UserAgent;
 @ISA=("NCG::LocalMetrics");
 
 my $DEFAULT_POEM_ROOT_URL = "http://mon.egi.eu/poem";
-my $DEFAULT_POEM_ROOT_URL_SUFFIX = "/api/0.2/json/profiles";
+my $DEFAULT_POEM_ROOT_URL_SUFFIX = "/api/v2/profiles";
 
 sub new
 {
@@ -48,7 +48,10 @@ sub new
             $self->{PROFILES_HASH}->{$pt} = 1;
         }
     }
-
+    if (! $self->{TOKEN}) {
+        $self->error("Authentication token must be defined.");
+        return;
+    }
 
     $self;
 }
@@ -61,6 +64,7 @@ sub getDataWWW {
     $ua->agent("NCG::LocalMetrics::POEM");
     $url = $self->{POEM_ROOT_URL} . $DEFAULT_POEM_ROOT_URL_SUFFIX;
     my $req = HTTP::Request->new(GET => $url);
+    $req->header('x-api-key' => $self->{TOKEN});
     my $res = $self->safeHTTPSCall($ua,$req);
     if (!$res->is_success) {
         $self->error("Could not get results from POEM: ".$res->status_line);
@@ -112,11 +116,11 @@ sub getData {
     if ($jsonRef && ref $jsonRef eq "ARRAY") {
         foreach my $profileTuple (@{$jsonRef}) {
             next if ( defined ($self->{PROFILES_HASH}) && ! exists $self->{PROFILES_HASH}->{$profileTuple->{name}});
+            my $vo = $profileTuple->{vo};
             foreach my $metricTuple (@{$profileTuple->{metric_instances}}) {
-                my $service = $metricTuple->{atp_service_type_flavour};
+                my $service = $metricTuple->{service_flavour};
                 my $metric = $metricTuple->{metric};
-                my $vo = $metricTuple->{vo};
-                my $voFqan = $metricTuple->{fqan} || '_ALL_';
+                my $voFqan = '_ALL_';
             
                 unless (exists $self->{METRIC_CONFIG}->{$metric}) {
                     $self->error("Metric configuration does not contain metric $metric. Metric will be skipped.");
@@ -206,6 +210,9 @@ reference that can contain following elements:
     
     METRIC_CONFIG - metric configuration structure fetched from
     NCG::MetricConfig module
+
+    TOKEN - token used for POEM API authentication
+    (default: )
 
 =back
 
