@@ -244,10 +244,10 @@ sub analyzeSite {
     
     # invoke LDAP first otherwise Active will erase SRMs because of
     # missing SE_PATH
-    invokeNCGObject ($conf, "NCG::LocalMetricsAttrs", "LDAP", $options );
+    invokeNCGObject ($conf, "NCG::LocalMetricsAttrs", "LDAP", $options, 1 );
 
     # invoke others...
-    invokeNCGObjects ($conf, "NCG::LocalMetricsAttrs", $options, undef, $sites);
+    invokeNCGObjects ($conf, "NCG::LocalMetricsAttrs", $options, 1, $sites);
 
     invokeNCGObjects ($conf, "NCG::SiteContacts", $options, 1, $sites);
 
