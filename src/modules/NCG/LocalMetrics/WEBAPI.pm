@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-package NCG::LocalMetrics::POEM;
+package NCG::LocalMetrics::WEBAPI;
 
 use strict;
 use warnings;
@@ -26,8 +26,8 @@ use LWP::UserAgent;
 
 @ISA=("NCG::LocalMetrics");
 
-my $DEFAULT_POEM_ROOT_URL = "http://mon.egi.eu/poem";
-my $DEFAULT_POEM_ROOT_URL_SUFFIX = "/api/v2/profiles";
+my $DEFAULT_WEBAPI_ROOT_URL = "https://api.argo.grnet.gr/";
+my $DEFAULT_WEBAPI_ROOT_URL_SUFFIX = "/api/v2/metric_profiles";
 
 sub new
 {
@@ -35,16 +35,16 @@ sub new
     my $class  = ref($proto) || $proto;
     my $self =  $class->SUPER::new(@_);
     # set default values
-    if (! $self->{POEM_ROOT_URL}) {
-        $self->{POEM_ROOT_URL} = $DEFAULT_POEM_ROOT_URL;
+    if (! $self->{WEBAPI_ROOT_URL}) {
+        $self->{WEBAPI_ROOT_URL} = $DEFAULT_WEBAPI_ROOT_URL;
     }
     if (!$self->{METRIC_CONFIG} || ref $self->{METRIC_CONFIG} ne "HASH" ) {
         $self->error("Metric configuration is not defined. Unable to generate configuration.");
         return;
     }
 
-    if ($self->{POEM_PROFILES}) {
-        foreach my $pt (split (/,/, $self->{POEM_PROFILES})) {
+    if ($self->{PROFILES}) {
+        foreach my $pt (split (/,/, $self->{PROFILES})) {
             $self->{PROFILES_HASH}->{$pt} = 1;
         }
     }
@@ -52,81 +52,73 @@ sub new
         $self->error("Authentication token must be defined.");
         return;
     }
+    if (! $self->{VO}) {
+        $self->{VO} = 'ops';
+    }
 
     $self;
-}
-
-sub getDataWWW {
-    my $self = shift;
-    my $url;
-
-    my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1, ssl_opts => { SSL_ca_path => '/etc/grid-security/certificates' });
-    $ua->agent("NCG::LocalMetrics::POEM");
-    $url = $self->{POEM_ROOT_URL} . $DEFAULT_POEM_ROOT_URL_SUFFIX;
-    my $req = HTTP::Request->new(GET => $url);
-    $req->header('x-api-key' => $self->{TOKEN});
-    my $res = $self->safeHTTPSCall($ua,$req);
-    if (!$res->is_success) {
-        $self->error("Could not get results from POEM: ".$res->status_line);
-        return;
-    }
-    return $res->content;
-}
-
-sub getDataFile {
-    my $self = shift;
-    my $result;
-    my $fileHndl;
-    
-    unless (open ($fileHndl, $self->{POEM_FILE})) {
-        $self->error("Cannot open POEM file: $self->{POEM_FILE}");
-        return;
-    }
-    $result = join ("", <$fileHndl>);
-    unless (close ($fileHndl)) {
-        $self->error("Cannot close POEM file: $self->{POEM_FILE}");
-        return $result;
-    }
-    return $result;
 }
 
 sub getData {
     my $self = shift;
     my $sitename = shift || $self->{SITENAME};
-    my $content;
     my $poemService = {};
+    my $url;
 
-    if ( $self->{POEM_FILE} ) {
-        $content = $self->getDataFile();
-    } else {
-        $content = $self->getDataWWW();
+    my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1, ssl_opts => { SSL_ca_path => '/etc/grid-security/certificates' });
+    $ua->agent("NCG::LocalMetrics::WEBAPI");
+    $url = $self->{WEBAPI_ROOT_URL} . $DEFAULT_WEBAPI_ROOT_URL_SUFFIX;
+    my $req = HTTP::Request->new(GET => $url);
+    $req->header('x-api-key' => $self->{TOKEN});
+    $req->header('Accept' => 'application/json');
+    $req->header('Content-Type' => 'application/json');
+    my $res = $self->safeHTTPSCall($ua,$req);
+    if (!$res->is_success) {
+        $self->error("Could not get results from WEBAPI: ".$res->status_line);
+        return;
     }
-    return unless ($content);
 
     my $jsonRef;
     eval {
-        $jsonRef = from_json($content);
+        $jsonRef = from_json($res->content);
     };
     if ($@) {
         $self->error("Error parsing JSON response: ".$@);
         return;
     }
+    if ( !$jsonRef ) {
+        $self->error("JSON response is empty");
+        return;
+    }
+    if ( ref $jsonRef ne "HASH" ) {
+        $self->error("JSON response is not a hash:".$res->content);
+        return;
+    }    
+    if ( ! exists $jsonRef->{status} ) {
+        $self->error("JSON response doesn't contain status hash:".$res->content);
+        return;
+    }
+    if ( ! exists $jsonRef->{status}->{code} ) {
+        $self->error("JSON response doesn't contain status code:".$res->content);
+        return;
+    }
+    if ( $jsonRef->{status}->{code} ne '200' ) {
+        $self->error("Status code is not equal 200:".$res->content);
+        return;
+    }
 
-    # Load (service, metric) tuples
-    if ($jsonRef && ref $jsonRef eq "ARRAY") {
-        foreach my $profileTuple (@{$jsonRef}) {
-            next if ( defined ($self->{PROFILES_HASH}) && ! exists $self->{PROFILES_HASH}->{$profileTuple->{name}});
-            my $vo = $profileTuple->{vo};
-            foreach my $metricTuple (@{$profileTuple->{metric_instances}}) {
-                my $service = $metricTuple->{service_flavour};
-                my $metric = $metricTuple->{metric};
-                my $voFqan = '_ALL_';
-            
+    my $vo = $self->{VO};
+    my $voFqan = '_ALL_';
+    foreach my $profileHash (@{$jsonRef->{data}}) {
+        next if ( defined ($self->{PROFILES_HASH}) && ! exists $self->{PROFILES_HASH}->{$profileHash->{name}});
+        foreach my $serviceHash (@{$profileHash->{services}}) {
+            my $service = $serviceHash->{service};
+            foreach my $metric (@{$serviceHash->{metrics}}) {
                 unless (exists $self->{METRIC_CONFIG}->{$metric}) {
                     $self->error("Metric configuration does not contain metric $metric. Metric will be skipped.");
                 } else {
                     $poemService->{$service}->{$metric}->{$vo}->{$voFqan} = 1;
-                }
+                }    
             }
         }
     }

@@ -26,9 +26,8 @@ use LWP::UserAgent;
 
 @ISA=("NCG::MetricConfig");
 
-my $DEFAULT_POEM_ROOT_URL = "http://poem.egi.eu/poem";
+my $DEFAULT_POEM_ROOT_URL = "http://poem.egi.eu";
 my $DEFAULT_POEM_ROOT_URL_SUFFIX = "/api/v2/metrics";
-my $DEFAULT_POEM_TAG = "production";
 sub new
 {
     my $proto  = shift;
@@ -37,9 +36,6 @@ sub new
     # set default values
     if (! $self->{POEM_ROOT_URL}) {
         $self->{POEM_ROOT_URL} = $DEFAULT_POEM_ROOT_URL;
-    }
-    if (! $self->{POEM_TAG}) {
-        $self->{POEM_TAG} = $DEFAULT_POEM_TAG;
     }
     if (! $self->{TOKEN}) {
         $self->error("Authentication token must be defined.");
@@ -55,7 +51,7 @@ sub getDataWWW {
 
     my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1);
     $ua->agent("NCG::MetricConfig::POEM");
-    $url = $self->{POEM_ROOT_URL} . $DEFAULT_POEM_ROOT_URL_SUFFIX . "/?tag=" . $self->{POEM_TAG};
+    $url = $self->{POEM_ROOT_URL} . $DEFAULT_POEM_ROOT_URL_SUFFIX;
     my $req = HTTP::Request->new(GET => $url);
     $req->header('x-api-key' => $self->{TOKEN});
     my $res = $self->safeHTTPSCall($ua,$req);
@@ -159,9 +155,6 @@ reference that can contain following elements:
     POEM_ROOT_URL - POEM JSON API root URL
     (default: http://localhost/poem_sync)
 
-    POEM_TAG - tag which should be passed to POEM
-    (default: production)
-    
     METRIC_CONFIG - metric configuration structure fetched from
     NCG::MetricConfig module
 
