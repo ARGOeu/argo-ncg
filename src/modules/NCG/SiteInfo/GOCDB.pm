@@ -50,6 +50,10 @@ sub new {
         $self->{URL_TYPE} = 'ROOT';
     }
 
+    if (! exists $self->{USE_IDS}) {
+        $self->{USE_IDS} = 0;
+    }
+
     $self->{TIMEOUT} = $self->{DEFAULT_HTTP_TIMEOUT} unless ($self->{TIMEOUT});
 
     if (! exists $self->{VO}) {
@@ -161,13 +165,15 @@ sub getData {
             }
         }
 
-        #foreach $elem ($site->getElementsByTagName("PRIMARY_KEY")) {
-        #    my $value = $elem->getFirstChild->getNodeValue();
-        #    if ($value) {
-        #        $self->{SITEDB}->addHost($hostname, $value);
-        #        $hostname .= '_' . $value;
-        #    }
-        #}
+        if ($self->{USE_IDS}) {
+            foreach $elem ($site->getElementsByTagName("PRIMARY_KEY")) {
+                my $value = $elem->getFirstChild->getNodeValue();
+                if ($value) {
+                    $self->{SITEDB}->addHost($hostname, $value);
+                    $hostname .= '_' . $value;
+                }
+            }
+        }
 
         if ($hostname) {
             my $serviceType;
@@ -311,6 +317,9 @@ can contains following elements:
 
   PASSWORD - password for basic authentication
            - default: undefined
+
+  USE_IDS - add _PRIMARY_KEY to hostnames to make service endpoints unique
+          - default: 0
 
 =back
 
