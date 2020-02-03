@@ -115,6 +115,7 @@ sub getData {
         my $elem;
         my $hostname;
         my $sesitename;
+        my $hostnameReal;
 
         foreach $elem ($site->getElementsByTagName("SITENAME")) {
             my $value = $elem->getFirstChild->getNodeValue();
@@ -156,9 +157,17 @@ sub getData {
             my $value = $elem->getFirstChild->getNodeValue();
             if ($value) {
                 $hostname = $value;
-                $self->{SITEDB}->addHost($hostname);
+                $hostnameReal = $value;
             }
         }
+
+        #foreach $elem ($site->getElementsByTagName("PRIMARY_KEY")) {
+        #    my $value = $elem->getFirstChild->getNodeValue();
+        #    if ($value) {
+        #        $self->{SITEDB}->addHost($hostname, $value);
+        #        $hostname .= '_' . $value;
+        #    }
+        #}
 
         if ($hostname) {
             my $serviceType;
@@ -167,7 +176,7 @@ sub getData {
                 if ($value) {
                     $self->{SITEDB}->addService($hostname, $value);
                     $self->{SITEDB}->addVO($hostname, $value, $self->{VO});
-                    $self->{SITEDB}->siteLDAP($hostname) if ($value eq 'Site-BDII');
+                    $self->{SITEDB}->siteLDAP($hostnameReal) if ($value eq 'Site-BDII');
 
                     $serviceType = $value;
                 }

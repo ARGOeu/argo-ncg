@@ -224,9 +224,7 @@ sub analyzeSite {
 
     # invoke SAM and GOCDB first in order to get BDII if not defined
     if (!$siteDB->siteLDAP) {
-        invokeNCGObject ($conf, "NCG::SiteInfo", "SAM", $options, 1);
         invokeNCGObject ($conf, "NCG::SiteInfo", "GOCDB", $options, 1);
-        invokeNCGObject ($conf, "NCG::SiteInfo", "ATP", $options, 1);
     }
 
     # invoke others...
@@ -250,8 +248,6 @@ sub analyzeSite {
     invokeNCGObjects ($conf, "NCG::LocalMetricsAttrs", $options, 1, $sites);
 
     invokeNCGObjects ($conf, "NCG::SiteContacts", $options, 1, $sites);
-
-    invokeNCGObjects ($conf, "NCG::ConfigPublish", $options, 1, $sites);    
 
     1;
 }
