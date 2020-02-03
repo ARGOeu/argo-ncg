@@ -50,6 +50,10 @@ sub new {
         $self->{URL_TYPE} = 'ROOT';
     }
 
+    if (! exists $self->{USE_IDS}) {
+        $self->{USE_IDS} = 0;
+    }
+
     $self->{TIMEOUT} = $self->{DEFAULT_HTTP_TIMEOUT} unless ($self->{TIMEOUT});
 
     if (! exists $self->{VO}) {
@@ -115,6 +119,7 @@ sub getData {
         my $elem;
         my $hostname;
         my $sesitename;
+        my $hostnameReal;
 
         foreach $elem ($site->getElementsByTagName("SITENAME")) {
             my $value = $elem->getFirstChild->getNodeValue();
@@ -156,7 +161,17 @@ sub getData {
             my $value = $elem->getFirstChild->getNodeValue();
             if ($value) {
                 $hostname = $value;
-                $self->{SITEDB}->addHost($hostname);
+                $hostnameReal = $value;
+            }
+        }
+
+        if ($self->{USE_IDS}) {
+            foreach $elem ($site->getElementsByTagName("PRIMARY_KEY")) {
+                my $value = $elem->getFirstChild->getNodeValue();
+                if ($value) {
+                    $self->{SITEDB}->addHost($hostname, $value);
+                    $hostname .= '_' . $value;
+                }
             }
         }
 
@@ -167,7 +182,7 @@ sub getData {
                 if ($value) {
                     $self->{SITEDB}->addService($hostname, $value);
                     $self->{SITEDB}->addVO($hostname, $value, $self->{VO});
-                    $self->{SITEDB}->siteLDAP($hostname) if ($value eq 'Site-BDII');
+                    $self->{SITEDB}->siteLDAP($hostnameReal) if ($value eq 'Site-BDII');
 
                     $serviceType = $value;
                 }
@@ -302,6 +317,9 @@ can contains following elements:
 
   PASSWORD - password for basic authentication
            - default: undefined
+
+  USE_IDS - add _PRIMARY_KEY to hostnames to make service endpoints unique
+          - default: 0
 
 =back
 

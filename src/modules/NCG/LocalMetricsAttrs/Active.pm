@@ -370,12 +370,12 @@ sub _analyzeURLs {
     }
     
     if ($self->{SITEDB}->hasService($hostname, "egi.SAM")) {
-        $self->{SITEDB}->hostAttribute($hostname, "MYEGI_HOST_URL", "http://${hostname}/");
+        $self->{SITEDB}->hostAttribute($hostname, "MYEGI_HOST_URL", 'http://'.$self->{SITEDB}->hostName($hostname).'/');
     }
 
     if ($self->{SITEDB}->hasService($hostname, "egi.MSGBroker")) {
-        $self->{SITEDB}->hostAttribute($hostname, "OPENWIRE_URL", "tcp://${hostname}:6166");
-        $self->{SITEDB}->hostAttribute($hostname, "OPENWIRE_SSL_URL", "ssl://${hostname}:6167");
+        $self->{SITEDB}->hostAttribute($hostname, "OPENWIRE_URL", 'tcp://'.$self->{SITEDB}->hostName($hostname).':6166');
+        $self->{SITEDB}->hostAttribute($hostname, "OPENWIRE_SSL_URL", 'ssl://'.$self->{SITEDB}->hostName($hostname).':6167');
     }
 
     if ($attr = $self->{SITEDB}->hostAttribute($hostname, "eu.egi.cloud.vm-management.occi_URL")) {
@@ -477,7 +477,7 @@ sub _setStaticHostAttrs {
 	my $self = shift;
 	my $hostname = shift;
 
-    $self->{SITEDB}->hostAttribute($hostname, "HOST_NAME", $hostname);
+    $self->{SITEDB}->hostAttribute($hostname, "HOST_NAME", $self->{SITEDB}->hostName($hostname));
 
     if ($self->{ENABLE_UNICORE_PROBES}) {
         my $unicoreLog = "/var/log/unicore/$hostname";

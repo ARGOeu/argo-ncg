@@ -133,7 +133,7 @@ sub getData {
                     $voname = lc($voname);
                     $voname =~ s/^vo://;
                     my $path = $voEntry->get_value('GlueVOInfoPath') or next;
-                    $self->{SITEDB}->hostAttributeVO($hostname, "SE_PATH", $voname, $path);
+                    $self->{SITEDB}->setHostAttributeVOByHostName($hostname, "SE_PATH", $voname, $path);
                 }
             }
 
@@ -147,7 +147,7 @@ sub getData {
             if ($mesg1->count != 0) {
                 my $port = $mesg1->entry(0)->get_value('GlueSEAccessProtocolPort');
                 if ($port) {
-                    $self->{SITEDB}->hostAttribute($hostname, "GRIDFTP_PORT", $port);
+                    $self->{SITEDB}->setHostAttributeByHostName($hostname, "GRIDFTP_PORT", $port);
                 }
             } 
         }
@@ -165,7 +165,7 @@ sub getData {
             if ($entry->get_value('GlueCEUniqueID') && $entry->get_value('GlueCEUniqueID') =~ /([-_.A-Za-z0-9]+):(\d+)\/(jobmanager|blahp)-([-_.A-Za-z0-9]+)-([-_.A-Za-z0-9]+)/) {
                 $hostname = $1;
                 $port = $2;
-                $self->{SITEDB}->hostAttribute($hostname, "GRAM_PORT", $port);
+                $self->{SITEDB}->setHostAttributeByHostName($hostname, "GRAM_PORT", $port);
             }
         }
     }
@@ -185,12 +185,12 @@ sub getData {
                 $port = $2;
                 my $cream_lrms = $4;
                 my $cream_queue = $5;
-                $self->{SITEDB}->hostAttribute($hostname, "CREAM_PORT", $port);
+                $self->{SITEDB}->setHostAttributeByHostName($hostname, "CREAM_PORT", $port);
                 foreach my $attr ($entry->get_value('GlueCEAccessControlBaseRule')) {
                     if ($attr =~ /VO:(.*)/) {
                         my $voname = lc($1);
-                        $self->{SITEDB}->hostAttributeVO($hostname, "CREAM_LRMS", $voname, $cream_lrms);
-                        $self->{SITEDB}->hostAttributeVO($hostname, "CREAM_QUEUE", $voname, $cream_queue);
+                        $self->{SITEDB}->setHostAttributeVOByHostName($hostname, "CREAM_LRMS", $voname, $cream_lrms);
+                        $self->{SITEDB}->setHostAttributeVOByHostName($hostname, "CREAM_QUEUE", $voname, $cream_queue);
                     }
                 }
             }
@@ -211,9 +211,9 @@ sub getData {
                 $port = $2;
 
                 if($entry->get_value('GlueServiceVersion') && $entry->get_value('GlueServiceVersion') eq '2.2.0') {
-                    $self->{SITEDB}->hostAttribute($hostname, "SRM2_PORT", $port);
+                    $self->{SITEDB}->setHostAttributeByHostName($hostname, "SRM2_PORT", $port);
                 } else { # Allow anything else to be SRMv1 to deal with bad information providers
-                    $self->{SITEDB}->hostAttribute($hostname, "SRM1_PORT", $port);
+                    $self->{SITEDB}->setHostAttributeByHostName($hostname, "SRM1_PORT", $port);
                 }
 
             }
@@ -232,7 +232,7 @@ sub getData {
             if ($entry->get_value('GlueServiceEndpoint') && $entry->get_value('GlueServiceEndpoint') =~ /^(https:\/\/([-_.A-Za-z0-9]+):(\d+)\/[-_.A-Za-z0-9]+)$/) {
                 $hostname = $2;
                 $port = $3;
-                $self->{SITEDB}->hostAttribute($hostname, "WMPROXY_PORT", $port);
+                $self->{SITEDB}->setHostAttributeByHostName($hostname, "WMPROXY_PORT", $port);
             }
         }
     }
@@ -249,7 +249,7 @@ sub getData {
             if ($entry->get_value('GlueServiceEndpoint') && $entry->get_value('GlueServiceEndpoint') =~ /gsissh:\/\/([-_.A-Za-z0-9]+):(\d+)/) {
                 $hostname = $1;
                 $port = $2;
-                $self->{SITEDB}->hostAttribute($hostname, "GSISSH_PORT", $port);
+                $self->{SITEDB}->setHostAttributeByHostName($hostname, "GSISSH_PORT", $port);
             }
         }
     }
@@ -266,7 +266,7 @@ sub getData {
             if ($entry->get_value('GlueServiceEndpoint') && $entry->get_value('GlueServiceEndpoint') =~ /([-_.A-Za-z0-9]+):(\d+)/) {
                 $hostname = $1;
                 $port = $2;
-                $self->{SITEDB}->hostAttribute($hostname, "MYPROXY_PORT", $port);
+                $self->{SITEDB}->setHostAttributeByHostName($hostname, "MYPROXY_PORT", $port);
             }
         }
     }
@@ -283,7 +283,7 @@ sub getData {
             if ($entry->get_value('GlueServiceEndpoint') && $entry->get_value('GlueServiceEndpoint') =~ /^https:\/\/([-_.A-Za-z0-9]+):(\d+)/) {
                 $hostname = $1;
                 $port = $2;
-                $self->{SITEDB}->hostAttribute($hostname, "RGMA_PORT", $port);
+                $self->{SITEDB}->setHostAttributeByHostName($hostname, "RGMA_PORT", $port);
             }
         }
     }
@@ -300,7 +300,7 @@ sub getData {
             if ($entry->get_value('GlueServiceEndpoint') && $entry->get_value('GlueServiceEndpoint') =~ /([-_.A-Za-z0-9]+):(\d+)\/bdii\-(top|site)/) {
                 $hostname = $1;
                 $port = $2;
-                $self->{SITEDB}->hostAttribute($hostname, "BDII_PORT", $port);
+                $self->{SITEDB}->setHostAttributeByHostName($hostname, "BDII_PORT", $port);
             }
         }
     }

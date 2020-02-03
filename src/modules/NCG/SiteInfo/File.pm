@@ -87,10 +87,6 @@ sub getData
                     $self->{SITEDB}->addService($2, $4);
                 } elsif ($action eq "REMOVE_HOST") {
                     $self->{SITEDB}->removeHost($2);
-                } elsif ($action eq "ADD_LB") {
-                    $self->{SITEDB}->addLBNode($2, $4);
-                } elsif ($action eq "REMOVE_LB") {
-                    $self->{SITEDB}->removeLBNode($2, $4);
                 } elsif ($action eq "REMOVE_SERVICE") {
                     $self->{SITEDB}->removeService(undef, $2);
                 } elsif ($action eq "REMOVE_HOST_SERVICE") {
@@ -127,10 +123,6 @@ extracts site information from file with list of tuples:
   ADD_HOST_SERVICE!host!service
   # remove the host
   REMOVE_HOST!host
-  # add load balancing node
-  ADD_LB!host!node
-  # remove load balancing node
-  REMOVE_LB!host!node
   # removes service from all hosts gathered by other SiteInfo modules
   REMOVE_SERVICE!service
   # removes service from defined host
