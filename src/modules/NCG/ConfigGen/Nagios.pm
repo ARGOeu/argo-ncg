@@ -149,6 +149,7 @@ sub new
         }
         my $sitename = $self->{SITEDB}->siteName();
         if ($sitename) {
+            $sitename =~ s/[^A-Za-z0-9\-\.]//g;
             $self->{OUTPUT_DIR} .= "/$sitename";
             $self->{FINAL_OUTPUT_DIR} .= "/$sitename";
             #$self->{NRPE_OUTPUT_DIR} .= "/$sitename";
@@ -1129,9 +1130,12 @@ sub _getMetricOptionString {
     foreach my $attr (keys %$attributes) {
         next if ($attr eq 'METRIC_CONFIG_FILE');
         my $value = $self->_getAttributeValue($host, $attr, $vo, $voFqan);
-        next unless($value);
+        next unless(defined $value);
 
-        $options .= $attributes->{$attr} . ' '  . $value . ' ';
+        $options .= $attributes->{$attr} . ' ';
+        if ($value) {
+            $options .= $value . ' ';
+        }
     }
 
     foreach my $param (keys %$parameters) {

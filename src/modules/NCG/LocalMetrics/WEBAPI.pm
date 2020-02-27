@@ -65,7 +65,7 @@ sub getData {
     my $poemService = {};
     my $url;
 
-    my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1, ssl_opts => { SSL_ca_path => '/etc/grid-security/certificates' });
+    my $ua = LWP::UserAgent->new( timeout=>$self->{TIMEOUT}, env_proxy=>1 );
     $ua->agent("NCG::LocalMetrics::WEBAPI");
     $url = $self->{WEBAPI_ROOT_URL} . $DEFAULT_WEBAPI_ROOT_URL_SUFFIX;
     my $req = HTTP::Request->new(GET => $url);

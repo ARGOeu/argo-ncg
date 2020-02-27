@@ -230,8 +230,6 @@ sub analyzeSite {
     # invoke others...
     invokeNCGObjects ($conf, "NCG::SiteInfo", $options, 1, $sites);
 
-    invokeNCGObjects ($conf, "NCG::RemoteMetrics", $options, 1, $sites);
-    
     invokeNCGObjects ($conf, "NCG::LocalMetrics", $options, 1, $sites);
 
     # skip site
