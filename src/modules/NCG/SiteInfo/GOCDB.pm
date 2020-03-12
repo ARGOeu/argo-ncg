@@ -173,6 +173,8 @@ sub getData {
                     $hostname .= '_' . $value;
                 }
             }
+        } else {
+            $self->{SITEDB}->addHost($hostname);
         }
 
         if ($hostname) {
