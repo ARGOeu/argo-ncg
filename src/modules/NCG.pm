@@ -20,15 +20,6 @@ package NCG;
 use NCG::SiteDB;
 use DBI;
 
-# static variables used for path configuration variable in metric definitions
-# in config generation (ConfigGen module) they are replaced by:
-# $USER1$
-$NCG_PROBES_PATH_NAGIOS = '__NAGIOS_PATH__';
-# WLCG_PROBES_DIR
-$NCG_PROBES_PATH_GRIDMON = '__GRIDMON_PATH__';
-# WLCG_PLUGINS_DIR
-$NCG_PLUGINS_PATH_GRIDMON = '__GRIDMON_PLUGINS_PATH__';
-
 sub new
 {
     my $proto  = shift;

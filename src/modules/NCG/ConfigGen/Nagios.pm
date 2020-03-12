@@ -32,14 +32,15 @@ my $DEFAULT_TEMPLATES_DIR = '/usr/share/argo-ncg/templates';
 my $DEFAULT_OUTPUT_DIR = '/etc/nagios/argo-ncg.d';
 my $DEFAULT_NRPE_OUTPUT_DIR = '/etc/nagios';
 
-my $DEFAULT_WLCG_PLUGINS_DIR = '/usr/libexec/grid-monitoring/plugins/nagios';
-my $DEFAULT_WLCG_PROBES_DIR = '/usr/libexec/grid-monitoring/probes';
 my $DEFAULT_PROXY_FILE = '/etc/nagios/globus/userproxy.pem';
 my $DEFAULT_MYPROXY_NAME = 'NagiosRetrieve';
 my $DEFAULT_MYPROXY_USER = 'nagios';
 my $DEFAULT_NAGIOS_USER = 'nagios';
 my $DEFAULT_VO = 'dteam';
 my $DEFAULT_NOTIFICATION_HEADER = 'ARGO-MON';
+
+my $DEFAULT_AMS_METRIC_QUEUES = '/var/spool/argo-nagios-ams-publisher/metrics/ /var/spool/argo-nagios-ams-publisher/metricsdevel/';
+my $DEFAULT_AMS_ALARM_QUEUES = '/var/spool/argo-nagios-ams-publisher/alarms';
 
 my $PNP_ACTION_URL = '/nagios/html/pnp4nagios/index.php?host=$HOSTNAME$&srv=$SERVICEDESC$';
 
@@ -101,19 +102,15 @@ sub new
         unless (defined $self->{FINAL_OUTPUT_DIR});
     $self->{NRPE_OUTPUT_DIR} = $DEFAULT_NRPE_OUTPUT_DIR
         unless (defined $self->{NRPE_OUTPUT_DIR});
-    $self->{GLITE_VERSION} = "UNKNOWN"
-        unless (defined $self->{GLITE_VERSION});
-    $self->{NAGIOS_ROLE} = 'site'
-        unless (defined $self->{NAGIOS_ROLE});
+    $self->{AMS_METRIC_QUEUES} = $DEFAULT_AMS_METRIC_QUEUES
+        unless (defined $self->{AMS_METRIC_QUEUES});
+    $self->{AMS_ALARM_QUEUES} = $DEFAULT_AMS_ALARM_QUEUES
+        unless (defined $self->{AMS_ALARM_QUEUES});
     $self->{INCLUDE_HOSTS} = 1
         unless (defined $self->{INCLUDE_HOSTS});
-    $self->{INCLUDE_EMPTY_HOSTS} = 1
+    $self->{INCLUDE_EMPTY_HOSTS} = 0
         unless (defined $self->{INCLUDE_EMPTY_HOSTS});
-    $self->{WLCG_PLUGINS_DIR} = $DEFAULT_WLCG_PLUGINS_DIR
-        unless (defined $self->{WLCG_PLUGINS_DIR});
-    $self->{WLCG_PROBES_DIR} = $DEFAULT_WLCG_PROBES_DIR
-        unless (defined $self->{WLCG_PROBES_DIR});
-    $self->{CHECK_HOSTS} = 1
+    $self->{CHECK_HOSTS} = 0
         unless (defined $self->{CHECK_HOSTS});
     $self->{NOTIFICATION_HEADER} = $DEFAULT_NOTIFICATION_HEADER
         unless (defined $self->{NOTIFICATION_HEADER});
@@ -121,19 +118,12 @@ sub new
         if (!defined $self->{ENABLE_NOTIFICATIONS} && ! defined $self->{SEND_TO_EMAIL});
     $self->{ENABLE_FLAP_DETECTION} = $DEFAULT_ENABLE_FLAP_DETECTION
         unless (defined $self->{ENABLE_FLAP_DETECTION});
-    $self->{SEND_TO_MSG} = 1
-        unless (defined $self->{SEND_TO_MSG});
     $self->{HOST_NOTIFICATIONS_OPTIONS} = "d,r"
         unless (defined $self->{HOST_NOTIFICATIONS_OPTIONS});
     $self->{SERVICE_NOTIFICATIONS_OPTIONS} = "w,u,c,r"
         unless (defined $self->{SERVICE_NOTIFICATIONS_OPTIONS});
     $self->{VO_HOST_FILTER} = $DEFAULT_VO_HOST_FILTER
         unless (defined $self->{VO_HOST_FILTER});
-
-    if (!$self->{TENANT}) {
-        $self->error("Tenant name is not defined. Unable to generate nagios commands configuration.");
-            return;
-    }
 
     if ($self->{MULTI_SITE_GLOBAL}) {
         if (! defined $self->{MULTI_SITE_SITES}) {
@@ -182,7 +172,6 @@ sub new
     }
 
     if ($self->{BACKUP_INSTANCE}) {
-        $self->{SEND_TO_MSG} = 0;
         $self->{ENABLE_NOTIFICATIONS} = 0;
         $self->{SEND_TO_DASHBOARD} = 0;
     }
@@ -472,21 +461,11 @@ sub _genCommands {
         return;
     }
 
-    my $sendToDashboard='';
-
-    if ($self->{SEND_TO_DASHBOARD}) {
-        $sendToDashboard = "--send-to-dashboard";
-    }
-
     while ($line = <$TEMPL>){
-        $line =~ s/<WLCG_PLUGINS_DIR>/$self->{WLCG_PLUGINS_DIR}/g;
-        $line =~ s/<WLCG_PROBES_DIR>/$self->{WLCG_PROBES_DIR}/g;
-        $line =~ s/<NAGIOS_ROLE>/$self->{NAGIOS_ROLE}/g;
+        $line =~ s/<AMS_METRIC_QUEUES>/$self->{AMS_METRIC_QUEUES}/g;
+        $line =~ s/<AMS_ALARM_QUEUES>/$self->{AMS_ALARM_QUEUES}/g;
         $line =~ s/<NOTIFICATION_HEADER>/$self->{NOTIFICATION_HEADER}/g;
         $line =~ s/<NAGIOS_SERVER>/$self->{NAGIOS_SERVER}/g;
-        $line =~ s/<SEND_TO_DASHBOARD>/$sendToDashboard/g;
-        $line =~ s/<SEND_TO_MSG>/$self->{SEND_TO_MSG}/g;
-        $line =~ s/<TENANT>/$self->{TENANT}/g;
         print $CONFIG $line;
     }
 
@@ -1266,26 +1245,6 @@ sub _genWlcgServicePassive {
     1;
 }
 
-sub _substPathVariable {
-    my $self = shift;
-    my $path = shift;
-    my $nrpe = shift;
-    my $retVal = $path;
-
-    if ($path eq $NCG::NCG_PROBES_PATH_GRIDMON) {
-        $retVal = $self->{WLCG_PROBES_DIR};
-    } elsif ($path eq $NCG::NCG_PLUGINS_PATH_GRIDMON) {
-        $retVal = $self->{WLCG_PLUGINS_DIR};
-    } elsif ($path eq $NCG::NCG_PROBES_PATH_NAGIOS) {
-        if ($nrpe) {
-            $retVal = '@NAGIOS_PROBES_DIR@';
-        } else {
-            $retVal = '$USER1$';
-        }
-    }
-    $retVal;
-}
-
 sub _genNativeService {
     my $self = shift;
     my $CONFIG = shift;
@@ -1318,10 +1277,6 @@ sub _genNativeService {
         }
     }
     
-    if (exists $config->{path}) {
-        $config->{path} = $self->_substPathVariable($config->{path});
-    }
-
     $line =~ s/<hostname>/$hostname/mg;
     $line =~ s/<servicegroup>/$servicegroup/mg;
     $line =~ s/<metric>/$metric/mg;
@@ -1570,9 +1525,6 @@ sub _genNativeServices {
         if ($isNRPE || $self->{SITEDB}->metricFlag($host,$metric, "NRPE_SERVICE")) {
             my $nrpeHost;
             my $nrpeConfig;
-            if (exists $config->{path}) {
-                $config->{path} = $self->_substPathVariable($config->{path}, 1);
-            }
 
             my $command = "$config->{path}/$probe";
             my $sudo = $self->{SITEDB}->metricFlag($host,$metric, "SUDO");
@@ -1781,14 +1733,11 @@ sub _genServices {
             $custom->{"_last_notification_type"} = "";
             $custom->{"_dashboard_notification_status"} = "";
             $custom->{"_dashboard_notification_status_last_update"} = "";
-            if ($self->{GGUS_SERVER_FQDN}) {
-                $custom->{"_GGUS"} = "";
-            }
             if ($roc) {
                 $custom->{"_roc"} = $roc;
             }
 
-            if ($obsess && ( $self->{GGUS_SERVER_FQDN} || $self->{SEND_TO_DASHBOARD} )) {
+            if ($obsess && ( $self->{SEND_TO_DASHBOARD} )) {
                 $contactgroupLocal .= ", msg-contacts";
             }
 
@@ -2274,7 +2223,15 @@ configuration in case when existing Nagios server is used:
 
 Creates new NCG::ConfigGen::Nagios instance. Argument $options is hash
 reference that can contain following elements:
-  BACKUP_INSTANCE - if set SEND_TO_MSG, SEND_TO_DASHBOARD and 
+  AMS_METRIC_QUEUES - space-separated list of path where metric results for AMS 
+                      will be stored                      
+  (default: /var/spool/argo-nagios-ams-publisher/metrics/ /var/spool/argo-nagios-ams-publisher/metricsdevel/)
+
+  AMS_ALARM_QUEUES - space-separated list of path where alarms for AMS will 
+                     be stored
+  (default: /var/spool/argo-nagios-ams-publisher/alarms)
+
+  BACKUP_INSTANCE - if set SEND_TO_DASHBOARD and 
                     ENABLE_NOTIFICATIONS will be set to 0. This variable is
                     used for setting up backup SAM instance (SAM-1127)
   (default: unset)
@@ -2286,7 +2243,7 @@ reference that can contain following elements:
   meaning that in case of host failure admin will receive notifications
   for all services on host. Set this option to false only if you don't
   care about notifications or if you have different dependencies in place.
-  (default: true)
+  (default: false)
 
   CHECK_PING - if set to false NCG will not check if host is pingable,
   all hosts will be checked via check_tcp check
@@ -2312,21 +2269,13 @@ reference that can contain following elements:
                      is needed for metrics with parameters stored in file
   (default: OUTPUT_DIR)
 
-  GGUS_SERVER_FQDN - if set to valid GGUS server handle_service_change will
-                    send notifications to GGUS
-                   - furthremore services which publish notifications will
-                   have _GGUS custom var added
-
-  GLITE_VERSION - which version of Glite UI the tests will run on.
-  (default: UNKNOWN)
-
   INCLUDE_HOSTS - if true hosts definitions (hosts.cfg) will be
   generated.
   (default: true)
 
   INCLUDE_EMPTY_HOSTS - if true configuration for hosts without any
   associated services will be generated.
-  (default: true)
+  (default: false)
 
   MULTI_SITE_GLOBAL - if true only global configuration for multisite
   will be generated. Global configuration consists of:
@@ -2391,10 +2340,6 @@ reference that can contain following elements:
   MYPROXY_USER_OPS or MYPROXY_USER_DTEAM.
   (default: see MYPROXY_USER)
 
-  NAGIOS_ROLE - defines if this is site-level or multisite-level instance.
-              - valid values: site, ROC
-  (default: site)
-
   NAGIOS_SERVER - name of the Nagios server, set this variable if server
   is using name different from hostname()
   (default: hostname()
@@ -2456,13 +2401,10 @@ reference that can contain following elements:
 
   SEND_TO_DASHBOARD - if set handle_service_change will send
                     notifications to dashboard
+  (default: false)
 
   SEND_TO_EMAIL - see ENABLE_NOTIFICATIONS
   
-  SEND_TO_MSG - if set to 0 obsess handler will not store results to directory
-                queue for sending to message bus.
-  (default: 1)
-
   TEMPLATES_DIR - path to templates directory.
   (default: /usr/share/grid-monitoring-config-gen/nagios)
 
@@ -2485,13 +2427,6 @@ reference that can contain following elements:
   VO_HOST_FILTER - if defined NCG will generate configuration only for hosts 
   that support defined VOs.
   (default: 1)
-
-  WLCG_PLUGINS_DIR - location of check_wlcg Nagios plugin which
-  is used for running WLCG probes.
-  (default: /usr/libexec/grid-monitoring/plugins/nagios)
-
-  WLCG_PROBES_DIR - location of WLCG probes.
-  (default: /usr/libexec/grid-monitoring/probes)
 
 Constructor checks if all templates are present and if output directory
 is writeable.

@@ -102,12 +102,12 @@ define command{
 
 define command {
         command_name handle_service_check
-        command_line /usr/bin/ams-metric-to-queue --queue /var/spool/argo-nagios-ams-publisher/metrics/ /var/spool/argo-nagios-ams-publisher/metricsdevel/ --service "$_SERVICESERVICE_FLAVOUR$" --hostname "$HOSTNAME$" --metric "$_SERVICEMETRIC_NAME$" --status "$SERVICESTATE$" --summary "$SERVICEOUTPUT$" --message "$LONGSERVICEOUTPUT$" --vofqan "$_SERVICEVO_FQAN$" --voname "$_SERVICEVO$" --roc "$_SERVICEROC$" --servicestatetype "$SERVICESTATETYPE$" --actual_data "$SERVICEPERFDATA$" --site "$_SERVICESITE_NAME$"
+        command_line /usr/bin/ams-metric-to-queue --queue <AMS_METRIC_QUEUES> --service "$_SERVICESERVICE_FLAVOUR$" --hostname "$HOSTNAME$" --metric "$_SERVICEMETRIC_NAME$" --status "$SERVICESTATE$" --summary "$SERVICEOUTPUT$" --message "$LONGSERVICEOUTPUT$" --vofqan "$_SERVICEVO_FQAN$" --voname "$_SERVICEVO$" --roc "$_SERVICEROC$" --servicestatetype "$SERVICESTATETYPE$" --actual_data "$SERVICEPERFDATA$" --site "$_SERVICESITE_NAME$"
 }
 
 define command {
         command_name ncg-notify-by-msg
-        command_line /usr/bin/ams-alarm-to-queue --queue /var/spool/argo-nagios-ams-publisher/alarms --service "$_SERVICESERVICE_FLAVOUR$" --hostname "$HOSTNAME$" --testname "$_SERVICEMETRIC_NAME$" --status "$SERVICESTATE$" --details "$SERVICEOUTPUT$\n$LONGSERVICEOUTPUT$" --urlhelp "$SERVICENOTESURL$" --urlhistory "https://$_SERVICESERVER$/nagios/cgi-bin/status.cgi?host=$HOSTNAME$" --roc "$_SERVICEROC$" --site "$_SERVICESITE_NAME$"
+        command_line /usr/bin/ams-alarm-to-queue --queue <AMS_ALARM_QUEUES> --service "$_SERVICESERVICE_FLAVOUR$" --hostname "$HOSTNAME$" --testname "$_SERVICEMETRIC_NAME$" --status "$SERVICESTATE$" --details "$SERVICEOUTPUT$\n$LONGSERVICEOUTPUT$" --urlhelp "$SERVICENOTESURL$" --urlhistory "https://$_SERVICESERVER$/nagios/cgi-bin/status.cgi?host=$HOSTNAME$" --roc "$_SERVICEROC$" --site "$_SERVICESITE_NAME$"
 }
 
 #####
