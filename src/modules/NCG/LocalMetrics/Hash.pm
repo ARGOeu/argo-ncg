@@ -59,6 +59,7 @@ sub getData {
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.GoodSEs';
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'org.nordugrid.ARC-CE-monitor';
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'org.nordugrid.ARC-CE-clean';
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'org.egee.RecvFromQueue';
                 }
                 if ($self->{INCLUDE_PROXY_CHECKS}) {
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.GridProxy-Valid';
