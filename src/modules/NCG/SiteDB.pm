@@ -54,62 +54,6 @@ sub addParent {
     1;
 }
 
-sub _addHostReal {
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    my $host = shift;
-    my $address;
-    my ($hostReal, $hostname1, $aliases, $addrtype, $length, @addrs, @addrs1);
-
-    # get detailed information about this host &
-    # check if host exists at all
-    unless ( ($hostReal, $aliases, $addrtype, $length, @addrs) = gethostbyname($host)) {
-#        return;
-        $hostReal = $host;
-    }
-
-    $self->{HOSTS}->{$host} = {};
-    $self->{HOSTS}->{$host}->{REALHOST} = $hostReal;
-
-    # add host to list of real hosts
-    $self->{REALHOSTS}->{$hostReal} = {} if (!exists $self->{REALHOSTS}->{$hostReal});
-
-    # we're dealing with alias here
-    if ($hostReal ne $host) {
-        $self->{HOSTS}->{$host}->{ADDRESS} = $host;
-        $self->{HOSTS}->{$host}->{ALIAS} = $hostReal;
-
-        # Add real host
-        $self->{REALHOSTS}->{$hostReal}->{ALIASES}->{$host} = {};
-
-        $self->verbose ("Found alias: $host, real hostname: $hostReal");
-    } else {
-        # here we use hostname for address field only if host has
-        # load-balanced nodes
-        $self->verbose ("Found host: $host.");
-        if ($#addrs) {
-            $self->{HOSTS}->{$host}->{ADDRESS} = $host;
-        } else {
-            $self->{HOSTS}->{$host}->{ADDRESS} = join ('.', unpack('C4', $addrs[0]));
-        }
-    }
-
-    # if there are load-balanced nodes add them to list
-    # of aliases, use their IP addresses for address field
-    if ($#addrs && ! exists $self->{REALHOSTS}->{$hostReal}->{LBNODES}) {
-        foreach my $addr (@addrs) {
-            if (($hostname1, $aliases, $addrtype, $length, @addrs1) = gethostbyaddr($addr, AF_INET)) {
-                $self->{REALHOSTS}->{$hostReal}->{LBNODES}->{$hostname1}->{ADDRESS} = join ('.', unpack('C4', $addr));
-                $self->verbose("  Found LB node: $hostname1.");
-            }
-        }
-    }
-
-    1;
-}
-
 sub addHost
 {
     my $self = shift;
@@ -117,9 +61,29 @@ sub addHost
     $self->debugSub(@_);
 
     my $host = shift || return;
-    my $res;
+    my $id = shift;
+    my $fullname;
+
+    if ($id) {
+        $fullname = "${host}_${id}";
+    } else {
+        $fullname = $host;
+    }
     
-    $self->_addHostReal($host) if (! exists $self->{HOSTS}->{$host});
+    if (! exists $self->{HOSTS}->{$fullname}) {
+        my ($hostReal, $aliases, $addrtype, $length, @addrs);
+
+        ($hostReal, $aliases, $addrtype, $length, @addrs) = gethostbyname($host);
+        if ($#addrs) {
+            $self->{HOSTS}->{$fullname}->{ADDRESS} = $host;
+        } else {
+            $self->{HOSTS}->{$fullname}->{ADDRESS} = join ('.', unpack('C4', $addrs[0]));
+        }
+        $self->{HOSTS}->{$fullname}->{ID} = $id if ($id);
+        $self->{HOSTS}->{$fullname}->{HOSTNAME} = $host;
+    }
+
+    1;
 }
 
 sub addService
@@ -131,31 +95,10 @@ sub addService
     my $host = shift || return;
     my $service = shift || return;
 
-    # host is in HOSTS, add service to REALHOSTS
+    # host is in HOSTS
     if (exists $self->{HOSTS}->{$host}) {
         if (! exists $self->{HOSTS}->{$host}->{SERVICES}->{$service}) {
             $self->{HOSTS}->{$host}->{SERVICES}->{$service} = {};
-        }
-        
-        my $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-        if (! exists $self->{REALHOSTS}->{$realHost}->{SERVICES}->{$service}) {
-            $self->{REALHOSTS}->{$realHost}->{SERVICES}->{$service} = {};
-        }
-    }
-    # host is only in REALHOSTS, add service to REALHOSTS & to all ALIASES
-    # TODO:
-    #  what if the alias is added afterwards? (this should probably be handled
-    #  afterwards in consistency check)
-    elsif (exists $self->{REALHOSTS}->{$host}) {
-        if (! exists $self->{REALHOSTS}->{$host}->{SERVICES}->{$service}) {
-            $self->{REALHOSTS}->{$host}->{SERVICES}->{$service} = {};
-        }
-        if ( exists $self->{REALHOSTS}->{$host}->{ALIASES}) {
-            foreach my $hostname (keys %{$self->{REALHOSTS}->{$host}->{ALIASES}}) {
-                if (! exists $self->{HOSTS}->{$hostname}->{SERVICES}->{$service}) {
-                    $self->{HOSTS}->{$hostname}->{SERVICES}->{$service} = {};
-                }
-            }
         }
     }
     # host doesn't exist, this is not allowed
@@ -177,7 +120,7 @@ sub addVO
     my $service = shift || return;
     my $vo = shift;
     
-    # host is in HOSTS, add service to REALHOSTS
+    # host is in HOSTS, add service/VO
     if (exists $self->{HOSTS}->{$host}) {
         # if service is not on the host return error
         if (! exists $self->{HOSTS}->{$host}->{SERVICES}->{$service} ) {
@@ -186,29 +129,6 @@ sub addVO
         }
         
         $self->{HOSTS}->{$host}->{SERVICES}->{$service}->{VOS}->{$vo} = 0;
-        
-        my $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-        $self->{REALHOSTS}->{$realHost}->{SERVICES}->{$service}->{VOS}->{$vo} = 0;
-    }
-    # host is only in REALHOSTS, add VO to REALHOSTS & to all ALIASES that have service
-    # TODO:
-    #  what if the alias is added afterwards? (this should probably be handled
-    #  afterwards in consistency check)
-    elsif (exists $self->{REALHOSTS}->{$host}) {
-        if (! exists $self->{REALHOSTS}->{$host}->{SERVICES}->{$service} ) {
-            $self->warning ("Service $service is not present on host $host!");
-            return;
-        }
-        
-        $self->{REALHOSTS}->{$host}->{SERVICES}->{$service}->{VOS}->{$vo} = 0;
-
-        if ( exists $self->{REALHOSTS}->{$host}->{ALIASES}) {
-            foreach my $hostname (keys %{$self->{REALHOSTS}->{$host}->{ALIASES}}) {
-                if ( exists $self->{HOSTS}->{$hostname}->{SERVICES}->{$service}) {
-                    $self->{HOSTS}->{$hostname}->{SERVICES}->{$service}->{VOS}->{$vo} = 0;
-                }
-            }
-        }
     }
     # host doesn't exist, this is not allowed
     else {
@@ -219,7 +139,7 @@ sub addVO
     1;
 }
 
-# remote metrics are not propagated to REALHOSTS
+# add remote metric (TODO: this should be removed)
 sub addRemoteMetric
 {
     my $self = shift;
@@ -250,7 +170,7 @@ sub addRemoteMetric
     1;
 }
 
-# remote metrics are not propagated to REALHOSTS
+# add remote metric (TODO: this should be removed)
 sub addRemoteMetricLong {
     my $self = shift;
 
@@ -285,7 +205,7 @@ sub addRemoteMetricLong {
 }
 
 
-# local metrics are stored in REALHOSTS; HOSTS contains only references
+# add local metric
 sub addLocalMetric
 {
     my $self = shift;
@@ -313,72 +233,36 @@ sub addLocalMetric
         return;
     }
 
-    my $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-
-    if (exists $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}) {
-        $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{SERVICES}->{$service} = 1;
-        $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{VOS}->{$vo}->{$voFqan} = 1 if ($vo);
-        $self->{HOSTS}->{$host}->{METRICS}->{$metric} = $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric};
+    if (exists $self->{HOSTS}->{$host}->{METRICS}->{$metric}) {
+        $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{SERVICES}->{$service} = 1;
+        $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{VOS}->{$vo}->{$voFqan} = 1 if ($vo);
         return 1;
     }
 
-    $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric} = {};
-    $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{TYPE} = "local";
+    $self->{HOSTS}->{$host}->{METRICS}->{$metric} = {};
+    $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{TYPE} = "local";
 
-    $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{SERVICES}->{$service} = 1;
-    $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{PROBE} = $probe;
-    $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{DEPENDENCIES} = $dependencies;
-    $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{FLAGS} = $flags;
-    $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{DOCURL} = $docUrl;
-    $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{VOS}->{$vo}->{$voFqan} = 1 if ($vo);
+    $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{SERVICES}->{$service} = 1;
+    $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{PROBE} = $probe;
+    $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{DEPENDENCIES} = $dependencies;
+    $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{FLAGS} = $flags;
+    $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{DOCURL} = $docUrl;
+    $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{VOS}->{$vo}->{$voFqan} = 1 if ($vo);
 
-    if ($self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{FLAGS}->{PASSIVE}) {
+    if ($self->{HOSTS}->{$host}->{METRICS}->{$metric}->{FLAGS}->{PASSIVE}) {
         if ($parent) {
-            $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{PARENT} = $parent;
-        } 
+            $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{PARENT} = $parent;
+        }
     } else {
-        $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{CONFIG} = $config;
-        $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{ATTRIBUTES} = $attributes;
-        $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{PARAMETERS} = $parameters;
-        $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{FILE_ATTRIBUTES} = $fileAttributes;
-        $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{FILE_PARAMETERS} = $fileParameters;
+        $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{CONFIG} = $config;
+        $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{ATTRIBUTES} = $attributes;
+        $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{PARAMETERS} = $parameters;
+        $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{FILE_ATTRIBUTES} = $fileAttributes;
+        $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{FILE_PARAMETERS} = $fileParameters;
     }
-
-    $self->{HOSTS}->{$host}->{METRICS}->{$metric} = $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric};
     
     $self->{METRIC_COUNT}++;
 
-    1;
-}
-
-# LB nodes are stored only in REALHOSTS
-sub addLBNode
-{
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    my $host = shift || return;
-    my $lbnode = shift || return;
-    my $realHost;
-    my $addr;
-    
-    if (exists $self->{HOSTS}->{$host} ) {
-        $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-    } elsif (exists $self->{REALHOSTS}->{$host}) {
-        $realHost = $host;
-    } else {
-        $self->warning ("Host $host is not in the list of hosts on site!");
-        return;
-    }
-    
-    unless ($addr = scalar gethostbyname($lbnode)) {
-        $self->error("Invalid LB node hostname: $lbnode.");
-        return;
-    }
-
-    $self->{REALHOSTS}->{$realHost}->{LBNODES}->{$lbnode}->{ADDRESS} = inet_ntoa($addr);
-    
     1;
 }
 
@@ -425,7 +309,7 @@ sub addUser
     1;
 }
 
-# Contacts are stored in REALHOSTS only
+# Add host contact
 sub addHostContact
 {
     my $self = shift;
@@ -442,11 +326,8 @@ sub addHostContact
         return;
     }
 
-    if (exists $self->{REALHOSTS}->{$host}) {
-        $self->{REALHOSTS}->{$host}->{CONTACTS}->{$value} = $enabled;
-    } elsif (exists $self->{HOSTS}->{$host} ) {
-        my $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-        $self->{REALHOSTS}->{$realHost}->{CONTACTS}->{$value} = $enabled;
+    if (exists $self->{HOSTS}->{$host} ) {
+        $self->{HOSTS}->{$host}->{CONTACTS}->{$value} = $enabled;
     } else {
         $self->warning ("Host $host is not in the list of hosts on site!");
         return;
@@ -455,7 +336,6 @@ sub addHostContact
     1;
 }
 
-# Contacts are stored in HOSTS only
 sub addServiceContact
 {
     my $self = shift;
@@ -473,8 +353,7 @@ sub addServiceContact
     }
 
     if (exists $self->{HOSTS}->{$host} ) {
-        my $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-        if (exists $self->{REALHOSTS}->{$realHost}->{CONTACTS}->{$value}) {
+        if (exists $self->{HOSTS}->{$host}->{CONTACTS}->{$value}) {
             $self->warning ("Contact is already in host contacts.");
             return;
         }
@@ -487,7 +366,6 @@ sub addServiceContact
     1;
 }
 
-# Contacts are stored in REALHOSTS only
 sub addServiceFlavourContact
 {
     my $self = shift;
@@ -506,8 +384,7 @@ sub addServiceFlavourContact
     }
 
     if (exists $self->{HOSTS}->{$host} ) {
-        my $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-        if (exists $self->{REALHOSTS}->{$realHost}->{CONTACTS}->{$value}) {
+        if (exists $self->{HOSTS}->{$host}->{CONTACTS}->{$value}) {
             $self->warning ("Contact is already in host contacts.");
             return;
         }
@@ -534,29 +411,6 @@ sub addRemoteService
 }
 
 # Remove methods
-
-# host is removed from REALHOSTS only in case it doesn't have any aliases left
-sub _removeHostReal ($$$)
-{
-    my $self = shift;
-    
-    $self->debugSub(@_);
-
-    my $host = shift;
-    my $hostAlias = shift;
-
-    # check if host still has some aliases
-    if (exists $self->{REALHOSTS}->{$host}->{ALIASES}) {
-        delete $self->{REALHOSTS}->{$host}->{ALIASES}->{$hostAlias};
-
-        if ( ! %{$self->{REALHOSTS}->{$host}->{ALIASES}} ) {
-            delete $self->{REALHOSTS}->{$host};
-        }
-    } else {
-        delete $self->{REALHOSTS}->{$host};
-    }
-}
-
 sub removeHost
 {
     my $self = shift;
@@ -570,29 +424,9 @@ sub removeHost
         return;
     }
 
-    $self->_removeHostReal($self->{HOSTS}->{$host}->{REALHOST}, $host);
     delete $self->{HOSTS}->{$host};
 
     1;
-}
-
-# remove service from REALHOST only
-sub _removeServiceReal
-{
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    my $host = shift;
-    my $service = shift || return;
-
-    if ( exists $self->{REALHOSTS}->{$host}->{ALIASES}) {
-        foreach my $hostname (keys %{$self->{REALHOSTS}->{$host}->{ALIASES}}) {
-            delete $self->{HOSTS}->{$hostname}->{SERVICES}->{$service};
-        }
-    }
-
-    delete $self->{REALHOSTS}->{$host}->{SERVICES}->{$service};
 }
 
 sub removeService
@@ -603,19 +437,14 @@ sub removeService
 
     my $host = shift;
     my $service = shift  || return;
-    my $hostOnly = shift;
 
     if (!$host) {
         foreach my $hostname (keys %{$self->{HOSTS}}) {
             delete $self->{HOSTS}->{$hostname}->{SERVICES}->{$service};
-            $self->_removeServiceReal($self->{HOSTS}->{$hostname}->{REALHOST}, $service) if (!$hostOnly);
         }
     } else {
         if (exists $self->{HOSTS}->{$host} ) {
             delete $self->{HOSTS}->{$host}->{SERVICES}->{$service};
-            $self->_removeServiceReal($self->{HOSTS}->{$host}->{REALHOST}, $service) if (!$hostOnly);
-        } elsif (exists $self->{REALHOSTS}->{$host}) {
-            $self->_removeServiceReal($host, $service);
         } else {
             $self->warning ("Host $host is not in the list of hosts on site!");
             return;
@@ -623,30 +452,6 @@ sub removeService
     }
 
     1;
-}
-
-# remove metrics from REALHOST only
-sub _removeMetricReal
-{
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    my $host = shift;
-    my $service = shift;
-    my $metric = shift;
-
-    if ( exists $self->{REALHOSTS}->{$host}->{ALIASES}) {
-        foreach my $hostname (keys %{$self->{REALHOSTS}->{$host}->{ALIASES}}) {
-            if (!$service || (exists $self->{HOSTS}->{$hostname}->{METRICS}->{$metric} && exists $self->{HOSTS}->{$hostname}->{METRICS}->{$metric}->{SERVICES}->{$service})) {
-                delete $self->{HOSTS}->{$hostname}->{METRICS}->{$metric};
-            }
-        }
-    }
-
-    if (!$service || (exists $self->{REALHOSTS}->{$host}->{METRICS}->{$metric} && exists $self->{REALHOSTS}->{$host}->{METRICS}->{$metric}->{SERVICES}->{$service})) {
-        delete $self->{REALHOSTS}->{$host}->{METRICS}->{$metric};
-    }
 }
 
 sub removeMetric
@@ -658,7 +463,6 @@ sub removeMetric
     my $host = shift;
     my $service = shift;
     my $metric = shift || return;
-    my $hostOnly = shift;
 
     # if host is undefined, remove metric from all hosts
     if (!$host) {
@@ -667,8 +471,6 @@ sub removeMetric
             if (!$service || (exists $self->{HOSTS}->{$hostname}->{METRICS}->{$metric} && exists $self->{HOSTS}->{$hostname}->{METRICS}->{$metric}->{SERVICES}->{$service})) {
                 delete $self->{HOSTS}->{$hostname}->{METRICS}->{$metric};
             }
-            # if flag hostOnly is switched on don't remove metrics from other aliases
-            $self->_removeMetricReal($self->{HOSTS}->{$hostname}->{REALHOST}, $service, $metric) if (!$hostOnly);
         }
     } else {
         # host is defined, check if it exists
@@ -676,42 +478,11 @@ sub removeMetric
             if (!$service || (exists $self->{HOSTS}->{$host}->{METRICS}->{$metric} && exists $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{SERVICES}->{$service})) {
                 delete $self->{HOSTS}->{$host}->{METRICS}->{$metric};
             }
-            $self->_removeMetricReal($self->{HOSTS}->{$host}->{REALHOST}, $service, $metric) if (!$hostOnly);
-        }
-        # check if real host exists
-        elsif (exists $self->{REALHOSTS}->{$host}) {
-            $self->_removeMetricReal($host, $service, $metric);
         } else {
             $self->warning ("Host $host is not in the list of hosts on site!");
             return;
         }
     }
-
-    1;
-}
-
-
-
-sub removeLBNode
-{
-    my $self = shift;
-    
-    $self->debugSub(@_);
-
-    my $host = shift || return;
-    my $lbnode = shift || return;
-    my $realHost;
-    
-    if (exists $self->{HOSTS}->{$host} ) {
-        $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-    } elsif (exists $self->{REALHOSTS}->{$host}) {
-        $realHost = $host;
-    } else {
-        $self->warning("Host $host is not in the list of hosts on site!");
-        return;
-    }
-
-    delete $self->{REALHOSTS}->{$realHost}->{LBNODES}->{$lbnode};
 
     1;
 }
@@ -806,7 +577,6 @@ sub globalAttribute
 }
 
 
-# attributes are stored only in REALHOSTS
 sub hostAttribute
 {
     my $self = shift;
@@ -816,26 +586,42 @@ sub hostAttribute
     my $host = shift || return;
     my $attribute = shift || return;
     my $value = shift;
-    my $realHost;
 
-    if (exists $self->{REALHOSTS}->{$host}) {
-        $realHost = $host;
-    } elsif (exists $self->{HOSTS}->{$host} ) {
-        $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-    } else {
+    if (!exists $self->{HOSTS}->{$host} ) {
         $self->warning("Host $host is not in the list of hosts on site!");
         return;
     }
 
-    $self->{REALHOSTS}->{$realHost}->{ATTRIBUTES}->{$attribute}->{VALUE} = $value if (defined $value);
-    if (!exists $self->{REALHOSTS}->{$realHost}->{ATTRIBUTES}->{$attribute}->{VALUE}) {
+    $self->{HOSTS}->{$host}->{ATTRIBUTES}->{$attribute}->{VALUE} = $value if (defined $value);
+    # if attribute doesn't exist check if global attribute exists
+    if (!exists $self->{HOSTS}->{$host}->{ATTRIBUTES}->{$attribute}->{VALUE}) {
         return $self->globalAttribute($attribute);
     } else {
-        return $self->{REALHOSTS}->{$realHost}->{ATTRIBUTES}->{$attribute}->{VALUE};
+        return $self->{HOSTS}->{$host}->{ATTRIBUTES}->{$attribute}->{VALUE};
     }
 }
 
-# attributes are stored only in REALHOSTS
+# set attribute for all hosts with a given hostname
+sub setHostAttributeByHostName
+{
+    my $self = shift;
+
+    $self->debugSub(@_);
+
+    my $host = shift || return;
+    my $attribute = shift || return;
+    my $value = shift || return;
+
+    if (exists $self->{HOSTS}->{$host} ) {
+        $self->{HOSTS}->{$host}->{ATTRIBUTES}->{$attribute}->{VALUE} = $value;
+    }
+    foreach my $hostname (keys %{$self->{HOSTS}}) {
+        if ($self->{HOSTS}->{$hostname}->{HOSTNAME} eq $host) {
+            $self->{HOSTS}->{$hostname}->{ATTRIBUTES}->{$attribute}->{VALUE} = $value;
+        }
+    }
+}
+
 sub globalAttributeVO
 {
     my $self = shift;
@@ -850,7 +636,6 @@ sub globalAttributeVO
     $self->{ATTRIBUTES}->{$attribute}->{VOS}->{$vo};
 }
 
-# attributes are stored only in REALHOSTS
 sub hostAttributeVO
 {
     my $self = shift;
@@ -861,27 +646,43 @@ sub hostAttributeVO
     my $attribute = shift;
     my $vo = shift;
     my $value = shift;
-    my $realHost;
 
-    if (exists $self->{REALHOSTS}->{$host}) {
-        $realHost = $host;
-    } elsif (exists $self->{HOSTS}->{$host} ) {
-        $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-    } else {
+    if (!exists $self->{HOSTS}->{$host} ) {
         $self->warning("Host $host is not in the list of hosts on site!");
         return;
     }
 
-    $self->{REALHOSTS}->{$realHost}->{ATTRIBUTES}->{$attribute}->{VOS}->{$vo} = $value if (defined $value);
+    $self->{HOSTS}->{$host}->{ATTRIBUTES}->{$attribute}->{VOS}->{$vo} = $value if (defined $value);
 
-    if (!exists $self->{REALHOSTS}->{$realHost}->{ATTRIBUTES}->{$attribute}->{VOS}->{$vo}) {
+    if (!exists $self->{HOSTS}->{$host}->{ATTRIBUTES}->{$attribute}->{VOS}->{$vo}) {
         return $self->globalAttributeVO($attribute,$vo);
     } else {
-        return $self->{REALHOSTS}->{$realHost}->{ATTRIBUTES}->{$attribute}->{VOS}->{$vo};
+        return $self->{HOSTS}->{$host}->{ATTRIBUTES}->{$attribute}->{VOS}->{$vo};
     }
 }
 
-# attributes are stored only in REALHOSTS
+# set VO attribute for all hosts with a given hostname
+sub setHostAttributeVOByHostName
+{
+    my $self = shift;
+
+    $self->debugSub(@_);
+
+    my $host = shift || return;
+    my $attribute = shift || return;
+    my $vo = shift;
+    my $value = shift || return;
+
+    if (exists $self->{HOSTS}->{$host} ) {
+        $self->{HOSTS}->{$host}->{ATTRIBUTES}->{$attribute}->{VOS}->{$vo} = $value;
+    }
+    foreach my $hostname (keys %{$self->{HOSTS}}) {
+        if ($self->{HOSTS}->{$hostname}->{HOSTNAME} eq $host) {
+            $self->{HOSTS}->{$hostname}->{ATTRIBUTES}->{$attribute}->{VOS}->{$vo} = $value;
+        }
+    }
+}
+
 sub addHostAttributeArray
 {
     my $self = shift;
@@ -891,21 +692,15 @@ sub addHostAttributeArray
     my $host = shift || return;
     my $attribute = shift || return;
     my $value = shift || return;
-    my $realHost;
 
-    if (exists $self->{REALHOSTS}->{$host}) {
-        $realHost = $host;
-    } elsif (exists $self->{HOSTS}->{$host} ) {
-        $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-    } else {
+    if (!exists $self->{HOSTS}->{$host} ) {
         $self->warning("Host $host is not in the list of hosts on site!");
         return;
     }
 
-    $self->{REALHOSTS}->{$realHost}->{ATTRIBUTES_ARRAY}->{$attribute}->{VALUE}->{$value} = 1;
+    $self->{HOSTS}->{$host}->{ATTRIBUTES_ARRAY}->{$attribute}->{VALUE}->{$value} = 1;
 }
 
-# attributes are stored only in REALHOSTS
 sub addHostAttributeArrayVO
 {
     my $self = shift;
@@ -916,18 +711,13 @@ sub addHostAttributeArrayVO
     my $attribute = shift || return;
     my $vo = shift || return;
     my $value = shift || return;
-    my $realHost;
 
-    if (exists $self->{REALHOSTS}->{$host}) {
-        $realHost = $host;
-    } elsif (exists $self->{HOSTS}->{$host} ) {
-        $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-    } else {
+    if (!exists $self->{HOSTS}->{$host} ) {
         $self->warning("Host $host is not in the list of hosts on site!");
         return;
     }
 
-    $self->{REALHOSTS}->{$realHost}->{ATTRIBUTES_ARRAY}->{$attribute}->{VOS}->{$vo}->{$value} = 1 if (defined $value);
+    $self->{HOSTS}->{$host}->{ATTRIBUTES_ARRAY}->{$attribute}->{VOS}->{$vo}->{$value} = 1 if (defined $value);
 }
 
 # Metric methods
@@ -945,33 +735,9 @@ sub _metricField
 
     # host is in HOSTS
     if (exists $self->{HOSTS}->{$host}) {
-        #my $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-        if (exists $self->{HOSTS}->{$host}->{METRICS}->{$metric})
-        {
-            #$self->{HOSTS}->{$host}->{METRICS}->{$metric}->{$attr} = $value if (defined $value);
+        if (exists $self->{HOSTS}->{$host}->{METRICS}->{$metric}) {
             return $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{$attr};
-        }
-        #elsif (exists $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric})
-        #{
-        #    $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{$attr} = $value if (defined $value);
-        #    return $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{$attr};
-        #}
-        else
-        {
-            $self->warning ("Metric $metric is not present on host $host!");
-            return;
-        }
-    }
-    # host is only in REALHOSTS
-    elsif (exists $self->{REALHOSTS}->{$host})
-    {
-        if (exists $self->{REALHOSTS}->{$host}->{METRICS}->{$metric})
-        {
-            #$self->{REALHOSTS}->{$host}->{METRICS}->{$metric}->{$attr} = $value if (defined $value);
-            return $self->{REALHOSTS}->{$host}->{METRICS}->{$metric}->{$attr};
-        }
-        else
-        {
+        } else {
             $self->warning ("Metric $metric is not present on host $host!");
             return;
         }
@@ -1018,8 +784,6 @@ sub metricType
     $self->_metricField ($host, $metric, "TYPE", $value);
 }
 
-# metricDocUrl can belong to both remote and local service so we need to check
-# both HOSTS AND REALHOSTS
 sub metricDocUrl
 {
     my $self = shift;
@@ -1165,10 +929,8 @@ sub addMetricVoFqans
         return;
     }
 
-    my $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-
-    if (exists $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}) {
-        $self->{REALHOSTS}->{$realHost}->{METRICS}->{$metric}->{VOS}->{$vo}->{$voFqan} = 1;
+    if (exists $self->{HOSTS}->{$host}->{METRICS}->{$metric}) {
+        $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{VOS}->{$vo}->{$voFqan} = 1;
         return 1;
     }  else {
         $self->warning ("Metric $metric doesn't exist on host $host!");
@@ -1477,23 +1239,8 @@ sub hostAddress
     $self->{HOSTS}->{$host}->{ADDRESS};    
 }
 
-sub realHost
-{
-    my $self = shift;
-    
-    $self->debugSub(@_);
-
-    my $host = shift || return;
-    
-    if (!exists $self->{HOSTS}->{$host} ) {
-        $self->error ("Host $host is not in the list of hosts on site!");
-        return;
-    }
-    
-    $self->{HOSTS}->{$host}->{REALHOST};
-}
-
-sub hostAlias
+# read-only
+sub hostName 
 {
     my $self = shift;
 
@@ -1506,31 +1253,7 @@ sub hostAlias
         return;
     }
 
-    $self->{HOSTS}->{$host}->{ALIAS};
-}
-
-sub LBNodeAddress
-{
-    my $self = shift;
-    
-    $self->debugSub(@_);
-
-    my $host = shift || return;
-    my $lbnode = shift || return;
-    my $realHost;
-
-    if (exists $self->{REALHOSTS}->{$host}) {
-        $realHost = $host;
-    } elsif (exists $self->{HOSTS}->{$host} ) {
-        $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-    } else {
-        $self->warning("Host $host is not in the list of hosts on site!");
-        return;
-    }
-    
-    if (exists $self->{REALHOSTS}->{$realHost}->{LBNODES}) {
-        return $self->{REALHOSTS}->{$realHost}->{LBNODES}->{$lbnode}->{ADDRESS};
-    }
+    $self->{HOSTS}->{$host}->{HOSTNAME};
 }
 
 sub userName
@@ -1580,19 +1303,6 @@ sub getHosts
     }
 }
 
-sub getRealHosts
-{
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    if (exists $self->{REALHOSTS}) {
-        return keys %{$self->{REALHOSTS}};
-    } else {
-        return ();
-    }
-}
-
 sub getServices
 {
     my $self = shift;
@@ -1603,21 +1313,6 @@ sub getServices
 
     if (exists $self->{HOSTS}->{$host}) {
         return keys %{$self->{HOSTS}->{$host}->{SERVICES}};
-    } else {
-        return ();
-    }
-}
-
-sub getRealServices
-{
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    my $host = shift || return;
-
-    if (exists $self->{REALHOSTS}->{$host}) {
-        return keys %{$self->{REALHOSTS}->{$host}->{SERVICES}};
     } else {
         return ();
     }
@@ -1702,99 +1397,6 @@ sub getRemoteMetrics
             }
         }
         return @metrics;
-    } else {
-        return ();
-    }
-}
-
-sub getRealMetrics
-{
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    my $host = shift || return ();
-
-    if (exists $self->{REALHOSTS}->{$host}) {
-        return keys %{$self->{REALHOSTS}->{$host}->{METRICS}};
-    } else {
-        return ();
-    }
-}
-
-sub getRealLocalMetrics
-{
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    my $host = shift || return ();
-
-    if (exists $self->{REALHOSTS}->{$host}) {
-        my @metrics;
-        foreach my $metric ( keys %{$self->{REALHOSTS}->{$host}->{METRICS}}) {
-            if ($self->{REALHOSTS}->{$host}->{METRICS}->{$metric}->{TYPE} eq 'local') {
-                push @metrics, $metric;
-            }    
-        }
-        return @metrics;
-    } else {
-        return ();
-    }
-}
-
-sub getRealNativeMetrics
-{
-    my $self = shift;
-
-    $self->getRealLocalMetrics(@_);
-}
-
-sub getLBNodes
-{
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    my $host = shift || return ();
-    my $realHost;
-
-    if (exists $self->{REALHOSTS}->{$host}) {
-        $realHost = $host;
-    } elsif (exists $self->{HOSTS}->{$host} ) {
-        $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-    } else {
-        $self->warning("Host $host is not in the list of hosts on site!");
-        return ();
-    }
-    
-    if (exists $self->{REALHOSTS}->{$realHost}->{LBNODES}) {
-        return keys %{$self->{REALHOSTS}->{$realHost}->{LBNODES}};
-    } else {
-        return ();
-    }
-}
-
-sub getAliases
-{
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    my $host = shift || return;
-    my $realHost;
-
-    if (exists $self->{REALHOSTS}->{$host}) {
-        $realHost = $host;
-    } elsif (exists $self->{HOSTS}->{$host} ) {
-        $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-    } else {
-        $self->warning("Host $host is not in the list of hosts on site!");
-        return ();
-    }
-
-    if (exists $self->{REALHOSTS}->{$realHost}->{ALIASES}) {
-        return keys %{$self->{REALHOSTS}->{$realHost}->{ALIASES}};
     } else {
         return ();
     }
@@ -1889,19 +1491,14 @@ sub getHostContacts
     $self->debugSub(@_);
 
     my $host = shift || return ();
-    my $realHost;
 
-    if (exists $self->{REALHOSTS}->{$host}) {
-        $realHost = $host;
-    } elsif (exists $self->{HOSTS}->{$host} ) {
-        $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-    } else {
+    if (!exists $self->{HOSTS}->{$host} ) {
         $self->warning("Host $host is not in the list of hosts on site!");
         return ();
     }
 
-    if (exists $self->{REALHOSTS}->{$realHost}->{CONTACTS}) {
-        return keys %{$self->{REALHOSTS}->{$realHost}->{CONTACTS}};
+    if (exists $self->{HOSTS}->{$host}->{CONTACTS}) {
+        return keys %{$self->{HOSTS}->{$host}->{CONTACTS}};
     } else {
         return ();
     }
@@ -1915,20 +1512,15 @@ sub isHostContactEnabled
 
     my $host = shift || return 0;
     my $contact = shift || return 0;
-    my $realHost;
 
-    if (exists $self->{REALHOSTS}->{$host}) {
-        $realHost = $host;
-    } elsif (exists $self->{HOSTS}->{$host} ) {
-        $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-    } else {
+    if (!exists $self->{HOSTS}->{$host} ) {
         $self->warning("Host $host is not in the list of hosts on site!");
         return 0;
     }
 
-    if (exists $self->{REALHOSTS}->{$realHost}->{CONTACTS}) {
-        if (exists $self->{REALHOSTS}->{$realHost}->{CONTACTS}->{$contact}) {
-            return $self->{REALHOSTS}->{$realHost}->{CONTACTS}->{$contact};
+    if (exists $self->{HOSTS}->{$host}->{CONTACTS}) {
+        if (exists $self->{HOSTS}->{$host}->{CONTACTS}->{$contact}) {
+            return $self->{HOSTS}->{$host}->{CONTACTS}->{$contact};
         } else {
             return 0;
         }
@@ -2085,19 +1677,6 @@ sub hasHost
     return exists $self->{HOSTS}->{$host};
 }
 
-sub hasRealHost
-{
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    my $host = shift || return;
-    my $hosts;
-
-    return exists $self->{REALHOSTS}->{$host};
-
-}
-
 sub hasService
 {
     my $self = shift;
@@ -2112,20 +1691,6 @@ sub hasService
     }
 }
 
-sub hasRealService
-{
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    my $host = shift || return;
-    my $service = shift || return;
-
-    if (exists $self->{REALHOSTS}->{$host}) {
-        return exists $self->{REALHOSTS}->{$host}->{SERVICES}->{$service};
-    }
-}
-
 sub hasAttribute {
     my $self = shift;
 
@@ -2133,18 +1698,13 @@ sub hasAttribute {
 
     my $host = shift || return;
     my $attr = shift || return;
-    my $realHost;
 
-    if (exists $self->{HOSTS}->{$host} ) {
-        $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-    } elsif (exists $self->{REALHOSTS}->{$host}) {
-        $realHost = $host;
-    } else {
+    if (!exists $self->{HOSTS}->{$host} ) {
         $self->error("Host $host is not in the list of hosts on site!");
         return;
     }
 
-    return (exists $self->{REALHOSTS}->{$realHost}->{ATTRIBUTES}->{$attr}->{VALUE} || exists $self->{ATTRIBUTES}->{$attr}->{VALUE});
+    return (exists $self->{HOSTS}->{$host}->{ATTRIBUTES}->{$attr}->{VALUE} || exists $self->{ATTRIBUTES}->{$attr}->{VALUE});
 }
 
 sub hasContacts
@@ -2154,18 +1714,13 @@ sub hasContacts
     $self->debugSub(@_);
 
     my $host = shift || return;
-    my $realHost;
 
-    if (exists $self->{REALHOSTS}->{$host}) {
-        $realHost = $host;
-    } elsif (exists $self->{HOSTS}->{$host} ) {
-        $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-    } else {
+    if (!exists $self->{HOSTS}->{$host} ) {
         $self->warning("Host $host is not in the list of hosts on site!");
         return;
     }
 
-    return (exists $self->{REALHOSTS}->{$realHost}->{CONTACTS});
+    return (exists $self->{HOSTS}->{$host}->{CONTACTS});
 }
 
 sub hasProfile
@@ -2214,27 +1769,6 @@ sub hasServiceFlavourContacts
     return (exists $self->{HOSTS}->{$host}->{SERVICE_FLAVOUR_CONTACTS} && exists $self->{HOSTS}->{$host}->{SERVICE_FLAVOUR_CONTACTS}->{$service});
 }
 
-sub hasLBNodes
-{
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    my $host = shift || return;
-    my $realHost;
-
-    if (exists $self->{REALHOSTS}->{$host}) {
-        $realHost = $host;
-    } elsif (exists $self->{HOSTS}->{$host} ) {
-        $realHost = $self->{HOSTS}->{$host}->{REALHOST};
-    } else {
-        $self->warning("Host $host is not in the list of hosts on site!");
-        return;
-    }
-    
-    return (exists $self->{REALHOSTS}->{$realHost}->{LBNODES});
-}
-
 sub hasMetrics {
     my $self = shift;
     my $retVal;
@@ -2265,8 +1799,6 @@ sub hasMetricVoFqan {
 
     if (exists $self->{HOSTS}->{$host}) {
         $hostRef = $self->{HOSTS}->{$host};
-    } elsif (exists $self->{REALHOSTS}->{$host}) {
-        $hostRef = $self->{REALHOSTS}->{$host};
     }
 
     return undef unless (defined $hostRef);
@@ -2292,8 +1824,6 @@ sub hasMetricVo {
     
     if (exists $self->{HOSTS}->{$host}) {
         $hostRef = $self->{HOSTS}->{$host};
-    } elsif (exists $self->{REALHOSTS}->{$host}) {
-        $hostRef = $self->{REALHOSTS}->{$host};
     }
 
     return 0 unless (defined $hostRef);
@@ -2318,8 +1848,6 @@ sub hasVO
 
     if (exists $self->{HOSTS}->{$host}) {
         $hostRef = $self->{HOSTS}->{$host};
-    } elsif (exists $self->{REALHOSTS}->{$host}) {
-        $hostRef = $self->{REALHOSTS}->{$host};
     }
 
     if (defined $hostRef) {
@@ -2365,8 +1893,6 @@ sub hasMetric
     # check if host exists
     if (exists $self->{HOSTS}->{$host}) {
         $metrics = $self->{HOSTS}->{$host}->{METRICS};
-    } elsif (exists $self->{REALHOSTS}->{$host} ) {
-        $metrics = $self->{REALHOSTS}->{$host}->{METRICS};
     } else {
         $self->warning("Host $host is not in the list of hosts on site!");
         return;
@@ -2391,8 +1917,6 @@ sub hasMetricNRPEService
     # check if host exists
     if (exists $self->{HOSTS}->{$host}) {
         $metrics = $self->{HOSTS}->{$host}->{METRICS};
-    } elsif (exists $self->{REALHOSTS}->{$host} ) {
-        $metrics = $self->{REALHOSTS}->{$host}->{METRICS};
     } else {
         $self->warning("Host $host is not in the list of hosts on site!");
         return;
@@ -2405,27 +1929,6 @@ sub hasMetricNRPEService
     }
 }
 
-# consistency check
-
-#sub _checkHostDependencies
-#{
-#    my $self = shift;
-    
-#    foreach my $metric (
-#}
-
-# iterate through REALHOSTS and clean up metrics with unsatisfied
-# dependencies
-#sub checkDependencies
-#{
-#    my $self = shift;
-
-#    foreach my $host (keys %{$self->{REALHOSTS}})
-#    {
-#        $self->_checkHostDependencies($self->{REALHOSTS}->{$host}->{METRICS});
-#    }
-#}
-
 =head1 NAME
 
 NCG::SiteDB
@@ -2433,15 +1936,11 @@ NCG::SiteDB
 =head1 DESCRIPTION
 
 The NCG::SiteDB module encapsulates the structure containing information
-about grid site, services & local/remote probes used
-for monitoring.
+about grid site, services & local/remote probes used for monitoring.
 
 Main component of NCG::SiteDB module is list of hosts which belong to site.
-Internally NCG::SiteDB keeps two lists of hosts in order to handle properly
-aliases and LB nodes:
 - List HOSTS contains all hosts which are found by NCG::SiteInfo module
 and for these hosts configuration is generated by NCG::ConfigGen. 
-- List REALHOSTS contains list of real names of hosts in list HOSTS.
 
 Structure is based on topology and probe description database.
 Structure of HOSTS is following:
@@ -2449,9 +1948,6 @@ Structure of HOSTS is following:
     - contains list of hosts on site
     - attributes:
       - ADDRESS: host address used for host check
-      - ALIAS: alias is set to real hostname if host is an alias
-      - REALHOST: real name of host (this is always set to name
-      used in list REALHOSTS)
 
   $self->{HOSTS}->{$hostName}->{SERVICES}
     - contains list of services on host
@@ -2489,42 +1985,14 @@ Structure of HOSTS is following:
       - PARENT: name of the metric which is executing complex check (local only)
       - VO_FQANS: list of VOs of VO_FQANs for which metric should be executed
 
-Structure of REALHOSTS is following:
-  $self->{REALHOSTS}
-    - contains list of hosts on site
-    - attributes:
-      - ADDRESS: host address used for host check
-
-  $self->{REALHOSTS}->{$hostName}->{ATTRIBUTES}
+  $self->{HOSTS}->{$hostName}->{ATTRIBUTES}
     - contains list of attributes needed for metrics
 
-  $self->{REALHOSTS}->{$hostName}->{ATTRIBUTES}->{$attribute}->{VOS}
+  $self->{HOSTS}->{$hostName}->{ATTRIBUTES}->{$attribute}->{VOS}
     - contains list of attribute values for each supported
 
-  $self->{REALHOSTS}->{$hostName}->{ALIASES}
-    - contains list of aliases for the host
-
-  $self->{REALHOSTS}->{$hostName}->{LBNODES}
-    - contains list of load balancing nodes for the host
-
-  $self->{REALHOSTS}->{$hostName}->{CONTACTS}
+  $self->{HOSTS}->{$hostName}->{CONTACTS}
     - contains list of contact persons for host
-
-(Following lists are the same as in list HOSTS with the difference
-that memers are aggregated over all aliases)
-
-  $self->{REALHOSTS}->{$hostName}->{SERVICES}
-    - contains list of services aggregated over all aliases
-    - attributes are the same as in HOSTS list
-
-  $self->{REALHOSTS}->{$hostName}->{SERVICES}->{$serviceName}->{VOS}
-    - contains list of VOs supported on service aggregated over all
-    aliases
-    - attributes are the same as in HOSTS list
-
-  $self->{REALHOSTS}->{$hostName}->{METRICS}
-    - contains list of local-ONLY metrics aggregated over all aliases
-    - attributes are the same as in HOSTS list
 
 Global attributes which can be used for any host are stored in:
   $self->{ATTRIBUTES}
@@ -2545,7 +2013,7 @@ are checked and then global ones.
 
   $site = NCG::SiteDB->new( $attr );
 
-Creates new NCG instance.
+Creates new NCG::SiteDB instance.
 
 =item C<addHost>
 
@@ -2555,10 +2023,6 @@ Adds new host.
 
 Result is 1 if operation is successful, 0 otherwise.
 
-If $host is not alias, host is added to HOSTS and REALHOSTS.
-If $host is alias, real hostname is added to REALHOSTS. 
-If host has LB nodes, LB nodes are added to REALHOSTS.
-
 =item C<addService>
 
   $res = $ncg->addService( $host, $service );
@@ -2566,10 +2030,6 @@ If host has LB nodes, LB nodes are added to REALHOSTS.
 Adds new service to host. If host doesn't exist, method returns error.
 
 Result is 1 if operation is successful, 0 otherwise.
-
-Service is added to both HOSTS and REALHOSTS.
-Services are added to REALHOST in order to generate
-proper configuration for LB nodes.
 
 =item C<addVO>
 
@@ -2579,8 +2039,6 @@ Adds new supported VO to service on host. If service on host doesn't exist,
 method returns error.
 
 Result is 1 if operation is successful, 0 otherwise.
-
-VO is added to both HOSTS and REALHOSTS.
 
 =item C<addLocalMetric>
 
@@ -2608,7 +2066,6 @@ Parameters are:
       - PASSIVE: if defined, metric is part of a complex check
       - VO: defines if metric is VO dependent
       - NRPE: defines if metric should be executed on NRPE
-      - NOLBNODE: defines if metric should be executed against LB nodes
       - PNP: generate action_url pointing to PNP data
       - SUDO: command is executed via sudo
       - NOHOSTNAME: command is not passed -H parameter
@@ -2624,10 +2081,6 @@ Parameters are:
     - $docUrl: URL with metric documentation
 
 Result is 1 if operation is successful, 0 otherwise.
-
-Local metric is added to REALHOSTS only. Local metrics are associated
-to metric sets which are associated with all aliases and LB nodes.
-Entities in list HOSTS have reference to metrics in REALHOSTS.
 
 =item C<addRemoteMetric>
 
@@ -2645,23 +2098,6 @@ Parameters are:
 
 Result is 1 if operation is successful, 0 otherwise.
 
-Remote metric is added to HOSTS only. Remote metrics are associated to reported
-names only and not to real host name and LB nodes.
-
-=item C<addLBNode>
-
-  $res = $ncg->addLBNode( $host, $lbnode );
-
-Adds new LB node to host. If host doesn't exist, method issues warning.
-
-Parameters are:
-    - $host: add LB node to defined host
-    - $lbnode: LB node name
-
-Result is 1 if operation is successful, 0 otherwise.
-
-LB node is added to REALHOSTS only.
-
 =item C<addContact>
 
   $res = $ncg->addContact( $contact, $enabled );
@@ -2677,10 +2113,6 @@ Site level contacts are kept independently from hosts.
   $res = $ncg->addHostContact( $host, $contact, $enabled );
 
 Adds contact to host.
-
-Contact is added to REALHOSTS only because it is reasonable
-to expect that the administrator responsible for host is
-also responsible for all its aliases.
 
 Variable $enabled defines if the contact should receive alarms 
 when ENABLE_NOTIFICATIONS is set to 0 (see SAM-1424).
@@ -2715,22 +2147,13 @@ Remove contact from all entities on site.
 
   $res = $ncg->removeHost( $host );
 
-Removes host from list HOSTS. Removes host from list of aliases
-in list REALHOSTS. Entry in REALHOSTS is kept as long as there
-is a single alias left.
+Removes host from list HOSTS. 
 
 =item C<removeService>
 
   $res = $ncg->removeService( $host );
 
-Removes service from host in list HOSTS. Removes service
-from list REALHOSTS and from all aliases in list HOSTS.
-
-=item C<removeLBNode>
-
-  $res = $ncg->removeLBNode( $host, $lbnode );
-
-Removes LB node from host in list REALHOSTS.
+Removes service from host in list HOSTS. 
 
 =item C<siteName>
 
@@ -2760,8 +2183,6 @@ Accessor method for property LDAP_ADDRESS.
 
 Accessor method for attribute $attr on host $host.
 
-Attributes are kept only in list REALHOSTS.
-
 =item C<hostAttributeVO>
 
   print $ncg->hostAttributeVO( $host, $attr, $vo );
@@ -2769,14 +2190,6 @@ Attributes are kept only in list REALHOSTS.
 
 Accessor method for attribute $attr for VO $vo on host
 $host.
-
-Attributes for VOs are kept only in list REALHOSTS.
-
-=item C<hostAttributeVOs>
-
-  @attrs = $ncg->hostAttributeVOs( $host, $attr );
-
-Method returns array of attribute values for each VO.
 
 =item C<metric*>
 
@@ -2797,12 +2210,6 @@ detailed description of metric attributes.
 
 Read-only accessor for address of host $host.
 
-=item C<hostAlias>
-
-  print $ncg->hostAlias ( $host );
-
-Read-only accessor for alias of host $host.
-
 =item C<userName>
 
   print $ncg->userName ( $user );
@@ -2815,12 +2222,6 @@ Read-only accessor for full name of user $user.
 
 Read-only accessor for email of user $user.
 
-=item C<LBNodeAddress>
-
-  print $ncg->LBNodeAddress ( $host, $lbnode );
-
-Read-only accessor for address of LB node $lbnod on host $host.
-
 =item C<getHosts>
 
   @res = $ncg->getHosts( $host );
@@ -2830,37 +2231,12 @@ Retrieves array of hosts in list HOSTS.
 This method is useful for generating configuration for
 registered hosts.
 
-=item C<getRealHosts>
-
-  @res = $ncg->getRealHosts( $host );
-
-Retrieves array of hosts in list REALHOSTS.
-
-This method is useful for generating configuration for
-load balanced nodes.
-
 =item C<getServices>
 
   @res = $ncg->getServices( $host );
 
 Retrieves array of services associated with $host from
 list HOSTS.
-
-=item C<getRealServices>
-
-  @res = $ncg->getRealServices( $host );
-
-Retrieves array of services associated with $host from
-list REALHOSTS.
-
-Since entry in REALHOSTS contains aggregated services,
-result is different from result of method C<getServices>.
-
-This method is implemented due to a rare case when real
-host name is present in list HOSTS and contains different
-set of services from the on in list REALHOSTS. Example:
-- real.host.org is registered as service CE
-- its alias alias.host.org is registered as service MON
 
 =item C<getRemoteServices>
 
@@ -2890,35 +2266,6 @@ list HOSTS.
 Retrieves array of remote metrics associated with $host from
 list HOSTS.
 
-=item C<getRealMetrics>
-
-  @res = $ncg->getRealMetrics( $host );
-
-Retrieves array of metrics associated with $host from
-list REALHOSTS.
-
-See comment for C<getRealServices>
-
-=item C<getLBNodes>
-
-  @res = $ncg->getLBNodes( $host );
-
-Retrieves array of LB nodes associated with host $host.
-
-Array is retrieved from entry in REALHOSTS, but the 
-argument $host can be both from HOSTS and REALHOSTS.
-In case when alias is used, method will find the
-appropriate entry in REALHOSTS by using REAL_HOST
-attribute.
-
-=item C<getAliases>
-
-  @res = $ncg->getAliases( $host );
-
-Retrieves array of aliases associated with host $host.
-
-See comment for C<getLBNodes>
-
 =item C<getContacts>
 
   @res = $ncg->getContacts;
@@ -2932,8 +2279,6 @@ all hosts.
 
 Retrieves array of contacts associated host $host
 
-See comment for C<getLBNodes>
-
 =item C<getUsers>
 
   @res = $ncg->getUsers;
@@ -2946,23 +2291,11 @@ Retrieves array of users associated with site.
 
 Method checks if $host exists in list HOSTS.
 
-=item C<hasRealHost>
-
-  $res = $ncg->hasRealHost ( $host );
-
-Method checks if $host exists in list REALHOSTS.
-
 =item C<hasService>
 
   $res = $ncg->hasService ( $host, $service );
 
 Method checks if $host in list HOSTS has $service.
-
-=item C<hasRealService>
-
-  $res = $ncg->hasRealService ( $host, $service );
-
-Method checks if $host in list REALHOSTS has $service.
 
 =item C<hasAttribute>
 
@@ -2992,12 +2325,6 @@ $vo.
 
 In case when all services don't have VOs defined, method
 returns true. Example is BDII service.
-
-=item C<hasLBNodes>
-
-  $res = $ncg->hasLBNodes ( $host );
-
-Method checks if $host has LB nodes.
 
 =item C<hasMetric>
 

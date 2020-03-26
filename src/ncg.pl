@@ -42,17 +42,6 @@ sub verbose {
     print $msg if $VERBOSE;
 }
 
-sub getGliteVersion {
-    my $res=`glite-version 2>&1`;
-    unless ($?) {
-        chop $res;
-    } else {
-        $res = "UNKNOWN";
-    }
-
-    return $res;
-}
-
 # single site config functions
 
 sub _invokeNCGObject {
@@ -90,7 +79,6 @@ sub _invokeNCGObject {
             $instance->{$opt} = $options->{$opt} unless defined ($instance->{$opt});
         }
 
-        # hack to set GLITE_VERSION if missing
         $instance->{VERBOSE} = $VERBOSE;
         $instance->{DEBUG} = $DEBUG;
         $instance->{BACKUP_INSTANCE} = 1 if ($BACKUP_INSTANCE);
@@ -224,16 +212,12 @@ sub analyzeSite {
 
     # invoke SAM and GOCDB first in order to get BDII if not defined
     if (!$siteDB->siteLDAP) {
-        invokeNCGObject ($conf, "NCG::SiteInfo", "SAM", $options, 1);
         invokeNCGObject ($conf, "NCG::SiteInfo", "GOCDB", $options, 1);
-        invokeNCGObject ($conf, "NCG::SiteInfo", "ATP", $options, 1);
     }
 
     # invoke others...
     invokeNCGObjects ($conf, "NCG::SiteInfo", $options, 1, $sites);
 
-    invokeNCGObjects ($conf, "NCG::RemoteMetrics", $options, 1, $sites);
-    
     invokeNCGObjects ($conf, "NCG::LocalMetrics", $options, 1, $sites);
 
     # skip site
@@ -251,14 +235,11 @@ sub analyzeSite {
 
     invokeNCGObjects ($conf, "NCG::SiteContacts", $options, 1, $sites);
 
-    invokeNCGObjects ($conf, "NCG::ConfigPublish", $options, 1, $sites);    
-
     1;
 }
 
 sub getConfig {
     my $CONFIG_FILE = shift;
-    my $gliteVersion = shift;
     my %options = (-ConfigFile => $CONFIG_FILE, -AllowMultiOptions => 1,
                    -InterPolateVars => 1, -InterPolateEnv => 1,
                    -IncludeGlob => 1, -UseApacheInclude => 1, 
@@ -271,10 +252,6 @@ sub getConfig {
     }
     my %conf = $config->getall;
 
-    if (!$conf{GLITE_VERSION}) {
-        $conf{GLITE_VERSION} = $gliteVersion;
-    }
-    
     # set default values
     $conf{NAGIOS_SERVER} = hostname() unless ($conf{NAGIOS_SERVER});
     $conf{VO} = 'dteam' unless ($conf{VO});
@@ -317,7 +294,7 @@ sub analyzeSites {
             print "Site $siteOnly is not in the list of configured sites.\n";
             exit 2;
         }
-        my $confLocal = getConfig($confFile, $conf->{GLITE_VERSION});
+        my $confLocal = getConfig($confFile);
         $confLocal->{SITENAME} = $sites->{$siteOnly}->siteName;
         $confLocal->{BDII} = $sites->{$siteOnly}->siteLDAP;
         return unless(analyzeSite($confLocal, $sites->{$siteOnly}, $sites, $ncgMetricConfigHash));
@@ -334,7 +311,7 @@ sub analyzeSites {
         }
     } else {
         foreach my $site (keys %$sites) {
-            my $confLocal = getConfig($confFile, $conf->{GLITE_VERSION});
+            my $confLocal = getConfig($confFile);
             $confLocal->{SITENAME} = $sites->{$site}->siteName;
             $confLocal->{BDII} = $sites->{$site}->siteLDAP;
             $siteCount++;
@@ -357,7 +334,7 @@ sub analyzeSites {
             print "WARNING: NCG::SiteSet modules didn't find any sites.\n";
         }
 
-        my $confLocal = getConfig($confFile, $conf->{GLITE_VERSION});
+        my $confLocal = getConfig($confFile);
 
         createNagiosSite($confLocal, $ncgs, $hosts, $outputDir, $finalOutputDir, $ncgMetricConfigHash);
 
@@ -410,7 +387,14 @@ sub createNagiosSite {
     invokeNCGObject ($confLocal, "NCG::SiteContacts", "File", {SITEDB=>$siteDB}, 1);
 
     # LocalMetrics
-    invokeNCGObjectExact ("NCG::LocalMetrics", "Hash", {PROFILE=>'internal', SITEDB=>$siteDB, METRIC_CONFIG=>$ncgMetricConfigHash}, 1);
+    invokeNCGObjectExact ("NCG::LocalMetrics", "Hash",
+                          {  PROFILE=>'internal',
+                             SITEDB=>$siteDB,
+                             METRIC_CONFIG=>$ncgMetricConfigHash,
+                             INCLUDE_PROXY_CHECKS=>$confLocal->{INCLUDE_PROXY_CHECKS},
+                             INCLUDE_EGI_CHECKS=>$confLocal->{INCLUDE_EGI_CHECKS},
+                             INCLUDE_IGTF_CHECKS=>$confLocal->{INCLUDE_IGTF_CHECKS}},
+                          1);
     invokeNCGObject ($confLocal, "NCG::LocalMetrics", "File", {SITEDB=>$siteDB, METRIC_CONFIG=>$ncgMetricConfigHash}, 1);
 
     invokeNCGObject ($confLocal,
@@ -543,7 +527,7 @@ if (!defined $timeout) {
 
 alarm($timeout);
 
-my $conf = getConfig($CONFIG_FILE, getGliteVersion());
+my $conf = getConfig($CONFIG_FILE);
 
 # Backup output directory
 unless ($outputDir) {

@@ -5,7 +5,7 @@
 
 Summary: ARGO Nagios config generator
 Name: argo-ncg
-Version: 0.4.8
+Version: 0.4.9
 Release: 1%{?dist}
 License: ASL 2.0
 Group: Network/Monitoring
@@ -46,7 +46,6 @@ install --mode=755 argo-unicore-truststore.sh $RPM_BUILD_ROOT/usr/libexec/%{name
 install --directory $RPM_BUILD_ROOT%{configdir}/ncg.conf.d/
 install --directory $RPM_BUILD_ROOT%{configdir}/ncg-localdb.d/
 install ncg.conf $RPM_BUILD_ROOT%{configdir}
-install ncg.conf.example $RPM_BUILD_ROOT%{configdir}
 install ncg.localdb $RPM_BUILD_ROOT%{configdir}
 install ncg.localdb.example $RPM_BUILD_ROOT%{configdir}
 install check_logfiles_ncg.conf $RPM_BUILD_ROOT%{configdir}
@@ -74,7 +73,6 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %{configdir}/ncg.conf.d
 %config(noreplace) %{configdir}/ncg.conf
 %config(noreplace) %{configdir}/ncg.localdb
-%config(noreplace) %{configdir}/ncg.conf.example
 %config(noreplace) %{configdir}/ncg.localdb.example
 %config(noreplace) %{configdir}/ncg-localdb.d
 %config(noreplace) /etc/nagios/argo-ncg.d
@@ -101,6 +99,8 @@ if [ -f /etc/init.d/ncg ] ; then
 fi
 
 %changelog
+* Thu Mar 26 2020 Emir Imamagic <eimamagi@srce.hr> - 0.4.9-1
+- Version bump
 * Thu Dec 21 2017 Emir Imamagic <eimamagi@srce.hr> - 0.4.2-1
 - Version bump
 * Thu May 25 2017 Emir Imamagic <eimamagi@srce.hr> - 0.3.4-1

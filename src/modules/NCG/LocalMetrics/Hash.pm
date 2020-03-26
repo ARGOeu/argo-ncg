@@ -50,6 +50,22 @@ sub getData {
     foreach my $host ($self->{SITEDB}->getHosts()) {
         foreach my $service ($self->{SITEDB}->getServices($host)) {
             if (exists $WLCG_NODETYPE->{$self->{PROFILE}}->{$service}) {
+
+                if ($self->{INCLUDE_IGTF_CHECKS}) {
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.CADist-Check';
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.CADist-GetFiles';
+                }
+                if ($self->{INCLUDE_EGI_CHECKS}) {
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.GoodSEs';
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'org.nordugrid.ARC-CE-monitor';
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'org.nordugrid.ARC-CE-clean';
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'org.egee.RecvFromQueue';
+                }
+                if ($self->{INCLUDE_PROXY_CHECKS}) {
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.GridProxy-Valid';
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.GridProxy-Get';
+                }
+
                 foreach my $metric (@{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}) {
                     my $metricRef = $self->{METRIC_CONFIG}->{$metric};
                     unless($metricRef) {
@@ -75,22 +91,11 @@ sub getData {
 
 # Nagios internal checks profile
 $WLCG_NODETYPE->{internal}->{"NAGIOS"} = [
-'hr.srce.CADist-Check',
-'hr.srce.CADist-GetFiles',
 'hr.srce.CertLifetime-Local',
 'org.nagios.DiskCheck-Local',
 'org.nagios.ProcessCrond',
-'hr.srce.GridProxy-Valid', # (if INCLUDE_PROXY_CHECKS && local, NRPE)
-'hr.srce.GridProxy-Get', # (if INCLUDE_PROXY_CHECKS && local, NRPE)
-'org.egee.RecvFromQueue', # (if INCLUDE_MSG_CHECKS_RECV
-'org.nagios.MsgDirSize', # (if INCLUDE_MSG_CHECKS_RECV || INCLUDE_MSG_SEND_CHECKS
-'org.nagios.AmsDirSize', # (if INCLUDE_MSG_CHECKS_RECV || INCLUDE_MSG_SEND_CHECKS
-'org.nagios.ProcessMsgToHandler', # (if INCLUDE_MSG_CHECKS_RECV
-'org.nagios.MsgToHandlerPidFile', # (if INCLUDE_MSG_CHECKS_RECV
-'hr.srce.GoodSEs',
+'org.nagios.AmsDirSize', 
 'org.nagios.NagiosCmdFile',
-'org.nordugrid.ARC-CE-monitor',
-'org.nordugrid.ARC-CE-clean',
 'argo.AMSPublisher-Check',
 ];
 
@@ -132,6 +137,17 @@ reference that can contain following elements:
   variable is used to filter metrics gathered by using native
   probes (e.g. Nagios: check_tcp, check_ftp). If not set,
   all defined metrics will be loaded.
+
+  INCLUDE_PROXY_CHECKS - if true configuration for proxy generation
+  will be generated. Set this option to 0 if there are no probes which
+  require valid proxy certificate.
+  (default: true)
+
+  INCLUDE_EGI_CHECKS - include various checks needed by EGI central instances
+  (default: false)
+
+  INCLUDE_IGTF_CHECKS - include checks for IGTF CA certificates
+  (default: false)
 
 =back
 

@@ -30,19 +30,11 @@ sub new {
     my $class  = ref($proto) || $proto;
     my $self =  $class->SUPER::new(@_);
 
-    $self->{INCLUDE_MSG_CHECKS_RECV} = 1
-        unless (defined $self->{INCLUDE_MSG_CHECKS_RECV});
-    $self->{INCLUDE_MSG_CHECKS_SEND} = 1
-        unless (defined $self->{INCLUDE_MSG_CHECKS_SEND});
-    $self->{INCLUDE_PROXY_CHECKS} = 1
+    $self->{INCLUDE_PROXY_CHECKS} = 0
         unless (defined $self->{INCLUDE_PROXY_CHECKS});
 
     if ($self->{PROBES_TYPE} && $self->{PROBES_TYPE} =~ /native/) {
         $self->{PROBES_TYPE} .= ',local';
-    }
-
-    if ($self->{BACKUP_INSTANCE}) {
-        $self->{INCLUDE_MSG_CHECKS_SEND} = 0;
     }
 
     $self;
@@ -119,20 +111,8 @@ sub _analyzeNAGIOS {
                     $remoteServices->{$remoteService} = 1;
                 }
             }
-            # Nagios checks exist, add MSG receiver checks
-            $self->{INCLUDE_MSG_CHECKS_RECV} = 1 if (exists $remoteServices->{"Nagios"});
             # set attributes for remote gatherers
         } 
-        # MSG checks
-        # this must go after remote checks because of Nagios remote checks
-        if (!$self->{INCLUDE_MSG_CHECKS_RECV}) {
-            $self->{SITEDB}->removeMetric($hostname, undef, "org.egee.RecvFromQueue");
-            $self->{SITEDB}->removeMetric($hostname, undef, "org.nagios.ProcessMsgToHandler");
-            $self->{SITEDB}->removeMetric($hostname, undef, "org.nagios.MsgToHandlerPidFile");
-            $self->{SITEDB}->removeMetric($hostname, undef, "org.nagios.MsgDirSize") if (!$self->{INCLUDE_MSG_CHECKS_SEND});
-            $self->{SITEDB}->removeMetric($hostname, undef, "org.nagios.AmsDirSize") if (!$self->{INCLUDE_MSG_CHECKS_SEND});
-        }
-        $self->{SITEDB}->removeMetric($hostname, undef, "org.egee.SendToMsg") if (!$self->{INCLUDE_MSG_CHECKS_SEND});
         # local metrics
         if ($self->{PROBES_TYPE} !~ /(local|all)/) {
             foreach my $metric ($self->{SITEDB}->getLocalMetrics($hostname)) {
@@ -370,12 +350,12 @@ sub _analyzeURLs {
     }
     
     if ($self->{SITEDB}->hasService($hostname, "egi.SAM")) {
-        $self->{SITEDB}->hostAttribute($hostname, "MYEGI_HOST_URL", "http://${hostname}/");
+        $self->{SITEDB}->hostAttribute($hostname, "MYEGI_HOST_URL", 'http://'.$self->{SITEDB}->hostName($hostname).'/');
     }
 
     if ($self->{SITEDB}->hasService($hostname, "egi.MSGBroker")) {
-        $self->{SITEDB}->hostAttribute($hostname, "OPENWIRE_URL", "tcp://${hostname}:6166");
-        $self->{SITEDB}->hostAttribute($hostname, "OPENWIRE_SSL_URL", "ssl://${hostname}:6167");
+        $self->{SITEDB}->hostAttribute($hostname, "OPENWIRE_URL", 'tcp://'.$self->{SITEDB}->hostName($hostname).':6166');
+        $self->{SITEDB}->hostAttribute($hostname, "OPENWIRE_SSL_URL", 'ssl://'.$self->{SITEDB}->hostName($hostname).':6167');
     }
 
     if ($attr = $self->{SITEDB}->hostAttribute($hostname, "eu.egi.cloud.vm-management.occi_URL")) {
@@ -477,7 +457,7 @@ sub _setStaticHostAttrs {
 	my $self = shift;
 	my $hostname = shift;
 
-    $self->{SITEDB}->hostAttribute($hostname, "HOST_NAME", $hostname);
+    $self->{SITEDB}->hostAttribute($hostname, "HOST_NAME", $self->{SITEDB}->hostName($hostname));
 
     if ($self->{ENABLE_UNICORE_PROBES}) {
         my $unicoreLog = "/var/log/unicore/$hostname";
@@ -560,26 +540,10 @@ separate method _analyzeXXX.
 Creates new NCG::LocalMetricsAttrs::Active instance. Argument $options is hash
 reference that can contain following elements:
 
-  BACKUP_INSTANCE - if set INCLUDE_MSG_CHECKS_SEND will be set to 0. 
-                    This variable is used for setting up backup 
-                    SAM instance (SAM-1127)
-  (default: unset)
-
-
-  INCLUDE_MSG_CHECKS_RECV - if true configuration for checks receiving results
-  via MSG will be generated. Set this option to 0 if you don't want to
-  receive results from the other Nagioses or SAM CE WN tests over MSG.
-  (default: true)
-
-  INCLUDE_MSG_CHECKS_SEND - if true configuration for checks sending results
-  via MSG will be generated. Set this option to 0 if you don't want to
-  send results to the rest of the world over MSG.
-  (default: true)
-
   INCLUDE_PROXY_CHECKS - if true configuration for proxy generation
   will be generated. Set this option to 0 if there are no probes which
   require valid proxy certificate.
-  (default: true)
+  (default: false)
 
   MYPROXY_SERVER - MyProxy server where user credentials are stored.
   (default: )

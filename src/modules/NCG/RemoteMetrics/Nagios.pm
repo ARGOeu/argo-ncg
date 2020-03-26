@@ -48,7 +48,6 @@ sub new {
     $self;
 }
 
-# remote metrics are not propagated to REALHOSTS
 sub addRemoteMetrics
 {
     my $self = shift;

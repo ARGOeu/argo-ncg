@@ -146,9 +146,6 @@ sub _loadMetrics {
                 } elsif ($action eq "REMOVE_HOST_METRIC") {
                     next if (!defined $4);
                     $self->{SITEDB}->removeMetric($2, undef, $4);
-                } elsif ($action eq "REMOVE_ALIAS_METRIC") {
-                    next if (!defined $4);
-                    $self->{SITEDB}->removeMetric($2, undef, $4, 1);
                 } else {
                     $self->debug("Unknown command found: $1");
                 }
@@ -235,8 +232,6 @@ Module extracts metric information from file with list of tuples:
   REMOVE_HOST_METRIC!host!metric
   # remove single metric from all hosts gathered by other SiteInfo modules
   REMOVE_METRIC!service!metric
-  # remove single metric for defined alias, leaving it on other aliases
-  REMOVE_ALIAS_METRIC!alias!metric
 
   # actions for adding/modifying metrics
   # use undef to remove parameter
