@@ -51,17 +51,17 @@ sub getData {
         foreach my $service ($self->{SITEDB}->getServices($host)) {
             if (exists $WLCG_NODETYPE->{$self->{PROFILE}}->{$service}) {
 
-                if ($self->{INCLUDE_IGTF_CHECKS}) {
+                if ($self->{INCLUDE_IGTF_CHECKS} && $service eq 'NAGIOS') {
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.CADist-Check';
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.CADist-GetFiles';
                 }
-                if ($self->{INCLUDE_EGI_CHECKS}) {
+                if ($self->{INCLUDE_EGI_CHECKS} && $service eq 'NAGIOS') {
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.GoodSEs';
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'org.nordugrid.ARC-CE-monitor';
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'org.nordugrid.ARC-CE-clean';
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'org.egee.RecvFromQueue';
                 }
-                if ($self->{INCLUDE_PROXY_CHECKS}) {
+                if ($self->{INCLUDE_PROXY_CHECKS} && $service eq 'NAGIOS') {
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.GridProxy-Valid';
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.GridProxy-Get';
                 }
