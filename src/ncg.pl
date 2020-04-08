@@ -406,7 +406,7 @@ sub createNagiosSite {
                                     PROBES_TYPE=>$confLocal->{PROBES_TYPE},
                                     MULTI_SITE_SITES=>$ncgs},
                                  1);
-    invokeNCGObject ($confLocal, "NCG::LocalMetricsAttr", "File", {SITEDB=>$siteDB}, 1);
+    invokeNCGObject ($confLocal, "NCG::LocalMetricsAttrs", "File", {SITEDB=>$siteDB}, 1);
 
     # LocalMetricsAttrs
     unless ($ncgs->{'nagios'}= invokeNCGObject ($confLocal, "NCG::ConfigGen", "Nagios",
