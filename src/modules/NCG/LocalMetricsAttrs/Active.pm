@@ -388,7 +388,7 @@ sub _analyzeURLs {
             }
         }};
     }
-    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "org.openstack.nova_URL")) {
+    if ($attr = $self->{SITEDB}->hostAttribute($hostname, "org.openstack.nova_URL") || $self->{SITEDB}->hostAttribute($hostname, "org.openstack.swift_URL")) {
         eval {
         my $occiurl = url($attr);
         $self->{SITEDB}->hostAttribute($hostname, 'OS_KEYSTONE_PORT', $occiurl->port);

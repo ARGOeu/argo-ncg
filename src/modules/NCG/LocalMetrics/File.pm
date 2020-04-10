@@ -80,7 +80,7 @@ sub _loadMetrics {
     
         while ($line = <$fileHndl>) {
             next if ($line =~ /^\s*#.*$/);
-            if ($line =~ /^\s*(\S+?)!(\S+?)(!(\S+?))?(!(\S+?))?(!(\S+))?\s*$/) {
+            if ($line =~ /^\s*(\S+?)!(\S+?)(!(\S+?))?(!(\S+?))?(!(.+))?$/) {
                 my $action = $1;
                 
                 # adding metrics to service or profile,service
