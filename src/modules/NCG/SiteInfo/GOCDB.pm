@@ -205,13 +205,14 @@ sub getData {
                     if ($child) {
                         my $value = $child->getNodeValue();
                         if ($value) {
+                            my $url;
                             eval {
                                 $url = url($value);
                             };
                             unless ($@) {
-                                $self->{SITEDB}->hostAttribute($hostname, 'PORT', $url->port) if ($url->port);
-                                $self->{SITEDB}->hostAttribute($hostname, 'PATH', $url->path) if ($url->path);
-                                $self->{SITEDB}->hostAttribute($hostname, 'SSL', 0) if ($url->scheme && $url->scheme eq 'https');
+                                eval { $self->{SITEDB}->hostAttribute($hostname, 'PORT', $url->port) if ($url->port); };
+                                eval { $self->{SITEDB}->hostAttribute($hostname, 'PATH', $url->path) if ($url->path); };
+                                eval { $self->{SITEDB}->hostAttribute($hostname, 'SSL', 0) if ($url->scheme && $url->scheme eq 'https'); };
                             }
                             $self->{SITEDB}->hostAttribute($hostname, 'URL', $value);
                             $self->{SITEDB}->hostAttribute($hostname, $serviceType."_URL", $value);
