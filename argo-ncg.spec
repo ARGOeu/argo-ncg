@@ -37,8 +37,8 @@ install --directory $RPM_BUILD_ROOT%{_sbindir}
 install --directory $RPM_BUILD_ROOT/usr/libexec/%{name}
 install --mode=755 ncg.pl $RPM_BUILD_ROOT%{_sbindir}
 install --mode=755 ncg.reload.sh $RPM_BUILD_ROOT%{_sbindir}
-install --mode=755 argo-unicore-keystore.sh $RPM_BUILD_ROOT/usr/libexec/%{name}
-install --mode=755 argo-unicore-truststore.sh $RPM_BUILD_ROOT/usr/libexec/%{name}
+install --mode=755 argo-java-keystore.sh $RPM_BUILD_ROOT/usr/libexec/%{name}
+install --mode=755 argo-java-truststore.sh $RPM_BUILD_ROOT/usr/libexec/%{name}
 
 #
 # Config
@@ -52,7 +52,6 @@ install check_logfiles_ncg.conf $RPM_BUILD_ROOT%{configdir}
 install --directory $RPM_BUILD_ROOT/etc/nagios/argo-ncg.d
 install --directory $RPM_BUILD_ROOT/etc/nagios/globus
 
-cp -r unicore $RPM_BUILD_ROOT/etc/nagios
 #
 # modules
 #
@@ -76,16 +75,11 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %{configdir}/ncg.localdb.example
 %config(noreplace) %{configdir}/ncg-localdb.d
 %config(noreplace) /etc/nagios/argo-ncg.d
-%config(noreplace) /etc/nagios/unicore/log4j-ucc.properties
-%config(noreplace) /etc/nagios/unicore/log4j-ucc-debug.properties
-%config(noreplace) /etc/nagios/unicore/log4j-uvosclc.properties
-%config(noreplace) /etc/nagios/unicore/log4j-uvosclc-debug.properties
-/etc/nagios/unicore/UNICORE_Job.u
 %{configdir}/check_logfiles_ncg.conf
 %{_sbindir}/ncg.pl
 %{_sbindir}/ncg.reload.sh
-/usr/libexec/%{name}/argo-unicore-keystore.sh
-/usr/libexec/%{name}/argo-unicore-truststore.sh
+/usr/libexec/%{name}/argo-java-keystore.sh
+/usr/libexec/%{name}/argo-java-truststore.sh
 
 %{perllib}/NCG.pm
 %{perllib}/NCG/
