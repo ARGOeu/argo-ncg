@@ -67,25 +67,11 @@ sub getData {
     		$self->_analyzeBDII($hostname, $sitename);
             $self->_analyzeMDS($hostname, $sitename);
 
-            $self->_analyzeTargetSystemFactory($hostname);
-
             $self->_analyzeSAM($hostname, $sitename);
             $self->_removeProxyChecks($hostname) unless ($self->{INCLUDE_PROXY_CHECKS});
             
             $self->_analyzeURLs($hostname, $sitename);
         }
-
-        unless ($self->{ENABLE_UNICORE_PROBES}) {
-            $self->{SITEDB}->removeMetric(undef, undef, 'emi.unicore.Gateway');
-            $self->{SITEDB}->removeMetric(undef, undef, 'emi.unicore.Registry');
-            $self->{SITEDB}->removeMetric(undef, undef, 'emi.unicore.ServiceOrchestrator');
-            $self->{SITEDB}->removeMetric(undef, undef, 'emi.unicore.UVOS');
-            $self->{SITEDB}->removeMetric(undef, undef, 'emi.unicore.TargetSystemFactory');
-            $self->{SITEDB}->removeMetric(undef, undef, 'emi.unicore.GlobalStorage');
-            $self->{SITEDB}->removeMetric(undef, undef, 'emi.unicore.GlobalStorage-FreeSpace');
-            $self->{SITEDB}->removeMetric(undef, undef, 'emi.unicore.WorkflowService');
-        }
-
     }
 
     1;
@@ -215,19 +201,6 @@ sub _analyzeSAM {
     }
 }
 
-sub _analyzeTargetSystemFactory {
-	my $self = shift;
-	my $hostname = shift;
-	my $url;
-
-	if ($self->{SITEDB}->hasService($hostname, "unicore6.TargetSystemFactory")) {
-		if ($url = $self->{SITEDB}->hostAttribute($hostname, "unicore6.TargetSystemFactory_URL")) {
-            my @addr = split(/\//, $url);
-            $self->{SITEDB}->hostAttribute($hostname, "TSF_SITE_NAME", $addr[3]) if ($addr[3]);
-		}
-	}
-}
-
 sub _analyzeBDII {
 	my $self = shift;
 	my $hostname = shift;
@@ -341,14 +314,6 @@ sub _analyzeURLs {
         }
     }
 
-    my @unicoreServices = ("unicore6.Gateway", "unicore6.ServiceOrchestrator", "unicore6.StorageManagement", "unicore6.TargetSystemFactory", "unicore6.UVOSAssertionQueryService", "unicore6.WorkflowFactory", "unicore6.StorageFactory");
-    foreach my $unicoreService (@unicoreServices) {
-        if ($attr = $self->{SITEDB}->hostAttribute($hostname, "${unicoreService}_URL")) {
-            $attr =~ s#^(.*)/[A-Za-z]+(\?res=[a-z_]+)?$#$1/Registry?res=default_registry#;
-            $self->{SITEDB}->hostAttribute($hostname, "LOCAL_${unicoreService}_REGISTRY_URL", $attr);
-        }
-    }
-    
     if ($self->{SITEDB}->hasService($hostname, "egi.SAM")) {
         $self->{SITEDB}->hostAttribute($hostname, "MYEGI_HOST_URL", 'http://'.$self->{SITEDB}->hostName($hostname).'/');
     }
@@ -458,26 +423,6 @@ sub _setStaticHostAttrs {
 	my $hostname = shift;
 
     $self->{SITEDB}->hostAttribute($hostname, "HOST_NAME", $self->{SITEDB}->hostName($hostname));
-
-    if ($self->{ENABLE_UNICORE_PROBES}) {
-        my $unicoreLog = "/var/log/unicore/$hostname";
-        $self->{SITEDB}->hostAttribute($hostname, "UNICORE_LOGS_DIR", $unicoreLog);
-        unless ( -d $unicoreLog ) {
-            unless (mkdir $unicoreLog) {
-                $self->error("Cannot create UNICORE_LOGS_DIR: $unicoreLog.");
-                return;
-            }
-            my ($login,$pass,$uid,$gid);
-            unless ( ($login,$pass,$uid,$gid) = getpwnam("nagios") ) {
-                $self->error("User nagios does not exist.");
-                return;
-            }
-            unless ( chown $uid, $gid, $unicoreLog ) {
-                $self->error("Failed changing the ownership of UNICORE_LOGS_DIR $unicoreLog to user nagios.");
-                return;
-            }
-        }
-    }
 }
 
 sub _setStaticAttrs {
@@ -495,16 +440,9 @@ sub _setStaticAttrs {
     $self->{SITEDB}->globalAttribute("SITENAME", $self->{SITENAME});
     $self->{SITEDB}->globalAttribute("GOCDB_ROOT_URL", $self->{GOCDB_ROOT_URL});
     $self->{SITEDB}->globalAttribute("PROXY_LIFETIME", $self->{PROXY_LIFETIME});
-
-    # UNICORE attributes
-    $self->{SITEDB}->globalAttribute("UVOS_CLIENT_PATH", '/usr/bin/uvos-clc');
-    $self->{SITEDB}->globalAttribute("UCC_PATH", '/usr/bin/ucc');
     $self->{SITEDB}->globalAttribute("JAVA_PATH", 'java');
-    $self->{SITEDB}->globalAttribute("UCC_CONFIG", '/etc/nagios/unicore/ucc.config');
-    $self->{SITEDB}->globalAttribute("UNICORE_JOB_FILE", '/etc/nagios/unicore/UNICORE_Job.u');
-    
     $self->{SITEDB}->globalAttribute("TOP_BDII", $self->{BDII_HOST});
-    $self->{SITEDB}->globalAttribute("KEYSTORE", '/etc/nagios/unicore/keystore.jks');
+    $self->{SITEDB}->globalAttribute("KEYSTORE", '/etc/nagios/globus/keystore.jks');
     $self->{SITEDB}->globalAttribute("TRUSTSTORE", '/etc/nagios/globus/truststore.ts');
 }
 
