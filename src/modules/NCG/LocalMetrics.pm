@@ -37,16 +37,12 @@ sub _addLocalMetric : method {
     my $depRef = {};
     my $attrRef = {};
     my $paramRef = {};
-    my $attrFileRef = {};
-    my $paramFileRef = {};
     my $flagsRef = {};
     my $parent;
 
     $confRef = {%{$metricRef->{config}}} if (exists $metricRef->{config});
     $attrRef = {%{$metricRef->{attribute}}} if (exists $metricRef->{attribute});
     $paramRef = {%{$metricRef->{parameter}}} if (exists $metricRef->{parameter});
-    $attrFileRef = {%{$metricRef->{file_attribute}}} if (exists $metricRef->{file_attribute});
-    $paramFileRef = {%{$metricRef->{file_parameter}}} if (exists $metricRef->{file_parameter});
     $depRef = {%{$metricRef->{dependency}}} if (exists $metricRef->{dependency});
     $flagsRef = {%{$metricRef->{flags}}} if (exists $metricRef->{flags});
     $parent = $metricRef->{parent} if (exists $metricRef->{parent});
@@ -58,8 +54,6 @@ sub _addLocalMetric : method {
                                     $confRef,
                                     $attrRef,
                                     $paramRef,
-                                    $attrFileRef,
-                                    $paramFileRef,
                                     $depRef,
                                     $flagsRef,
                                     $parent,

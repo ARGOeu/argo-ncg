@@ -1075,32 +1075,9 @@ sub _getMetricOptionString {
     my $nrpe = shift;
     my $attributes = $self->{SITEDB}->metricAttributes($host, $metric);
     my $parameters = $self->{SITEDB}->metricParameters($host, $metric);
-    my $fileAttributes = $self->{SITEDB}->metricFileAttributes($host, $metric);
-    my $fileParameters = $self->{SITEDB}->metricFileParameters($host, $metric);
     my $options = "";
     my $fileName = "";
     my $finalFileName = "";
-
-    # file attrs/params exist, need to create the file
-    if ($fileAttributes && %$fileAttributes || $fileParameters && %$fileParameters) {
-        my $CONFIG;
-        $fileName = $self->{OUTPUT_DIR} . "/" . $host . "_" . $metric . ".config";
-        $finalFileName = $self->{FINAL_OUTPUT_DIR} . "/" . $host . "_" . $metric . ".config";
-        if (!open ($CONFIG, ">" . $fileName)) {
-            $self->error("Cannot open configuration file ".$fileName."!");
-            return;
-        }
-        foreach my $attr (keys %$fileAttributes) {
-            my $value = $self->_getAttributeValue($host, $attr, $vo, $voFqan);
-            next unless($value);
-
-            print $CONFIG $fileAttributes->{$attr} . '="' . $value . "\"\n";
-        }
-        foreach my $param (keys %$fileParameters) {
-            print $CONFIG $param . '="' . $fileParameters->{$param} . "\"\n";
-        }
-        close $CONFIG;
-    }
 
     if (exists $attributes->{METRIC_CONFIG_FILE}) {
         $options .= $attributes->{METRIC_CONFIG_FILE} . ' '  . $finalFileName . ' ';
