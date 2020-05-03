@@ -1982,7 +1982,7 @@ Parameters are:
       - PNP: generate action_url pointing to PNP data
       - SUDO: command is executed via sudo
       - NOHOSTNAME: command is not passed -H parameter
-      - OBSESS: metric results should be published via obsess command
+      - NOPUBLISH: metric results should NOT be published via obsess command
       - NRPE_SERVICE: metric should be executed via NRPE on service node
       - REQUIREMENT: metric should be generated if req. metric is present on 
         some site 
