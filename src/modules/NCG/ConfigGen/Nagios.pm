@@ -1695,10 +1695,14 @@ sub _genServices {
             my $passive = $self->{SITEDB}->metricFlag($host, $metric, "PASSIVE");
             my $isNrpe = $self->{NRPE_UI} && $self->{SITEDB}->metricFlag($host, $metric, "NRPE");
             my $serviceType = join (',', $self->{SITEDB}->metricServices($host, $metric));
-            my $obsess = $self->{SITEDB}->metricFlag($host, $metric, "OBSESS") || 0;
+            my $obsess = 1;
             my $contactgroupLocal = $contactgroup;
             my $roc = $self->{SITEDB}->siteROC || $self->{ROC};
             my $metricVo = $self->{SITEDB}->metricFlag($host, $metric, "VO");
+
+            if ($self->{SITEDB}->metricFlag($host, $metric, "NOPUBLISH")) {
+                $obsess = 0;
+            }
 
             my $custom = {};
             $custom->{"_site_name"} = $sitename;
