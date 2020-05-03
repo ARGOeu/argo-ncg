@@ -5,7 +5,7 @@
 
 Summary: ARGO Nagios config generator
 Name: argo-ncg
-Version: 0.4.10
+Version: 0.4.11
 Release: 1%{?dist}
 License: ASL 2.0
 Group: Network/Monitoring
@@ -93,6 +93,8 @@ if [ -f /etc/init.d/ncg ] ; then
 fi
 
 %changelog
+* Sun May 3 2020 Emir Imamagic <eimamagi@srce.hr> - 0.4.11-1
+- Version bump
 * Fri Apr 10 2020 Emir Imamagic <eimamagi@srce.hr> - 0.4.10-1
 - Version bump
 * Thu Mar 26 2020 Emir Imamagic <eimamagi@srce.hr> - 0.4.9-1
