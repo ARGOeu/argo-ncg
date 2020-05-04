@@ -36,7 +36,7 @@ my $DEFAULT_PROXY_FILE = '/etc/nagios/globus/userproxy.pem';
 my $DEFAULT_MYPROXY_NAME = 'NagiosRetrieve';
 my $DEFAULT_MYPROXY_USER = 'nagios';
 my $DEFAULT_NAGIOS_USER = 'nagios';
-my $DEFAULT_VO = 'dteam';
+my $DEFAULT_VO = 'ops';
 my $DEFAULT_NOTIFICATION_HEADER = 'ARGO-MON';
 
 my $DEFAULT_AMS_METRIC_QUEUES = '/var/spool/argo-nagios-ams-publisher/metrics/ /var/spool/argo-nagios-ams-publisher/metricsdevel/';
@@ -46,7 +46,7 @@ my $PNP_ACTION_URL = '/nagios/html/pnp4nagios/index.php?host=$HOSTNAME$&srv=$SER
 
 my $DEFAULT_CHECK_PING = 1;
 my $DEFAULT_ENABLE_FLAP_DETECTION = 0;
-my $DEFAULT_VO_HOST_FILTER = 1;
+my $DEFAULT_VO_HOST_FILTER = 0;
 
 my $CONFIGURATION_TEMPLATES =
    {
@@ -2396,7 +2396,7 @@ reference that can contain following elements:
   VO - which VO credentials should be used for local probes. It is possible
   to define multiple VOs with comma separated list:
     VO = vo1,vo2,vo3,...
-  (default: dteam)
+  (default: ops)
 
   VO_<VO>_DEFAULT_VO_FQAN - if defined NCG will generate all checks for
   listed FQANs on profiles which are not tied to FQANs. In case of
@@ -2407,7 +2407,7 @@ reference that can contain following elements:
   
   VO_HOST_FILTER - if defined NCG will generate configuration only for hosts 
   that support defined VOs.
-  (default: 1)
+  (default: 0)
 
 Constructor checks if all templates are present and if output directory
 is writeable.
