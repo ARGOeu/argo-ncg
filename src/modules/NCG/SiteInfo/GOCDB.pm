@@ -42,11 +42,6 @@ sub new {
         $self->{NODE_MONITORED} = 'Y';
     }
 
-    if ($self->{SCOPE} && $self->{SCOPE} !~ /Local/) {
-        $self->error("Incorrect SCOPE value, acceptable values are: Local.");
-        return;
-    }
-
     if (! exists $self->{URL_TYPE}) {
         $self->{URL_TYPE} = 'ROOT';
     }
@@ -78,7 +73,7 @@ sub getData {
         $content = <$fileHndl>;
         close $fileHndl;
     } else {
-        my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1, ssl_opts => { SSL_ca_path => '/etc/grid-security/certificates' });
+        my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1);
         $ua->agent("NCG::SiteInfo::GOCDB");
 
         my $url;
@@ -93,6 +88,7 @@ sub getData {
         } else {
             $url = $self->{GOCDB_ROOT_URL};
         }
+
         my $req = HTTP::Request->new(GET => $url);
 
         if ( $self->{USERNAME} && $self->{PASSWORD} ) {
