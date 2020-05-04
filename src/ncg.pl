@@ -254,7 +254,6 @@ sub getConfig {
 
     # set default values
     $conf{NAGIOS_SERVER} = hostname() unless ($conf{NAGIOS_SERVER});
-    $conf{VO} = 'dteam' unless ($conf{VO});
     $conf{NAGIOS_ADMIN} = 'root@localhost' unless ($conf{NAGIOS_ADMIN});
     $conf{PROBES_TYPE} = 'all' unless ($conf{PROBES_TYPE});
 
@@ -374,12 +373,14 @@ sub createNagiosSite {
         $siteDB->addHost($confLocal->{NRPE_UI});
         $siteDB->addService($confLocal->{NRPE_UI}, 'NRPE');
     }
-    $confLocal->{VO} =~ s/^\s+//;
-	$confLocal->{VO} =~ s/\s+$//;
-    foreach my $vo ( split (/\s*,\s*/, $confLocal->{VO}) ) {
-        $siteDB->addVO($confLocal->{NAGIOS_SERVER}, 'NAGIOS', $vo);
-        $siteDB->addVO($confLocal->{MYPROXY_SERVER}, 'MyProxy', $vo) if ($confLocal->{MYPROXY_SERVER});
-    }
+    if (exists $confLocal->{VO}) {
+        $confLocal->{VO} =~ s/^\s+//;
+        $confLocal->{VO} =~ s/\s+$//;
+        foreach my $vo ( split (/\s*,\s*/, $confLocal->{VO}) ) {
+            $siteDB->addVO($confLocal->{NAGIOS_SERVER}, 'NAGIOS', $vo);
+            $siteDB->addVO($confLocal->{MYPROXY_SERVER}, 'MyProxy', $vo) if ($confLocal->{MYPROXY_SERVER});
+        }
+    } 
 
     # SiteContact mimic
     $siteDB->addContact($confLocal->{NAGIOS_ADMIN});
