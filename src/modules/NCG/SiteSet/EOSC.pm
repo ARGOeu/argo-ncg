@@ -81,11 +81,7 @@ sub getData
         $content = <$fileHndl>;
         close $fileHndl;
     } else {
-        $ENV{HTTPS_KEY_FILE} = $self->{X509_KEY};
-        $ENV{HTTPS_CERT_FILE} = $self->{X509_CERT};
-        $ENV{HTTPS_CA_DIR} = '/etc/grid-security/certificates';
-
-        my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy => 1, ssl_opts => { SSL_key_file => $self->{X509_KEY}, SSL_cert_file => $self->{X509_CERT}, SSL_ca_path => '/etc/grid-security/certificates' });
+        my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy => 1, ssl_opts => { SSL_key_file => $self->{X509_KEY}, SSL_cert_file => $self->{X509_CERT} });
         $ua->agent("NCG::SiteSet::EOSC");
         my $req = HTTP::Request->new(GET => $self->{URL});
         my $res = $self->safeHTTPSCall($ua,$req);
