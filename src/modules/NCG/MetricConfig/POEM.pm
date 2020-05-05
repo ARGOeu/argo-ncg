@@ -26,7 +26,7 @@ use LWP::UserAgent;
 
 @ISA=("NCG::MetricConfig");
 
-my $DEFAULT_POEM_ROOT_URL = "http://poem.egi.eu";
+my $DEFAULT_POEM_ROOT_URL = "https://training.poem.devel.argo.grnet.gr";
 my $DEFAULT_POEM_ROOT_URL_SUFFIX = "/api/v2/metrics";
 sub new
 {
@@ -153,7 +153,7 @@ reference that can contain following elements:
     (default: )
     
     POEM_ROOT_URL - POEM JSON API root URL
-    (default: http://localhost/poem_sync)
+    (default: https://training.poem.devel.argo.grnet.gr)
 
     METRIC_CONFIG - metric configuration structure fetched from
     NCG::MetricConfig module

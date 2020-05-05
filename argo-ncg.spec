@@ -46,6 +46,7 @@ install --mode=755 argo-java-truststore.sh $RPM_BUILD_ROOT/usr/libexec/%{name}
 install --directory $RPM_BUILD_ROOT%{configdir}/ncg.conf.d/
 install --directory $RPM_BUILD_ROOT%{configdir}/ncg-localdb.d/
 install ncg.conf $RPM_BUILD_ROOT%{configdir}
+install ncg-vars.conf $RPM_BUILD_ROOT%{configdir}
 install ncg.localdb $RPM_BUILD_ROOT%{configdir}
 install ncg.localdb.example $RPM_BUILD_ROOT%{configdir}
 install check_logfiles_ncg.conf $RPM_BUILD_ROOT%{configdir}
@@ -71,6 +72,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %config(noreplace) %{configdir}/ncg.conf.d
 %config(noreplace) %{configdir}/ncg.conf
+%config(noreplace) %{configdir}/ncg-vars.conf
 %config(noreplace) %{configdir}/ncg.localdb
 %config(noreplace) %{configdir}/ncg.localdb.example
 %config(noreplace) %{configdir}/ncg-localdb.d
