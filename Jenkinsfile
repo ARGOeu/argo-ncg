@@ -26,6 +26,11 @@ pipeline {
                 }
                 archiveArtifacts artifacts: '**/*.rpm', fingerprint: true
             }
+            post {
+                always {
+                    cleanWs()
+                }
+            }
         }
         stage ('Centos 6') {
             agent {
@@ -41,6 +46,11 @@ pipeline {
                     sh "/home/jenkins/build-rpm.sh -w ${WORKSPACE} -b ${BRANCH_NAME} -d centos6 -p ${PROJECT_DIR} -s ${REPOKEY}"
                 }
                 archiveArtifacts artifacts: '**/*.rpm', fingerprint: true
+            }
+            post {
+                always {
+                    cleanWs()
+                }
             }
         }
     }
