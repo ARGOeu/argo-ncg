@@ -36,7 +36,7 @@ my $DEFAULT_PROXY_FILE = '/etc/nagios/globus/userproxy.pem';
 my $DEFAULT_MYPROXY_NAME = 'NagiosRetrieve';
 my $DEFAULT_MYPROXY_USER = 'nagios';
 my $DEFAULT_NAGIOS_USER = 'nagios';
-my $DEFAULT_VO = 'dteam';
+my $DEFAULT_VO = 'ops';
 my $DEFAULT_NOTIFICATION_HEADER = 'ARGO-MON';
 
 my $DEFAULT_AMS_METRIC_QUEUES = '/var/spool/argo-nagios-ams-publisher/metrics/ /var/spool/argo-nagios-ams-publisher/metricsdevel/';
@@ -46,7 +46,7 @@ my $PNP_ACTION_URL = '/nagios/html/pnp4nagios/index.php?host=$HOSTNAME$&srv=$SER
 
 my $DEFAULT_CHECK_PING = 1;
 my $DEFAULT_ENABLE_FLAP_DETECTION = 0;
-my $DEFAULT_VO_HOST_FILTER = 1;
+my $DEFAULT_VO_HOST_FILTER = 0;
 
 my $CONFIGURATION_TEMPLATES =
    {
@@ -1075,32 +1075,9 @@ sub _getMetricOptionString {
     my $nrpe = shift;
     my $attributes = $self->{SITEDB}->metricAttributes($host, $metric);
     my $parameters = $self->{SITEDB}->metricParameters($host, $metric);
-    my $fileAttributes = $self->{SITEDB}->metricFileAttributes($host, $metric);
-    my $fileParameters = $self->{SITEDB}->metricFileParameters($host, $metric);
     my $options = "";
     my $fileName = "";
     my $finalFileName = "";
-
-    # file attrs/params exist, need to create the file
-    if ($fileAttributes && %$fileAttributes || $fileParameters && %$fileParameters) {
-        my $CONFIG;
-        $fileName = $self->{OUTPUT_DIR} . "/" . $host . "_" . $metric . ".config";
-        $finalFileName = $self->{FINAL_OUTPUT_DIR} . "/" . $host . "_" . $metric . ".config";
-        if (!open ($CONFIG, ">" . $fileName)) {
-            $self->error("Cannot open configuration file ".$fileName."!");
-            return;
-        }
-        foreach my $attr (keys %$fileAttributes) {
-            my $value = $self->_getAttributeValue($host, $attr, $vo, $voFqan);
-            next unless($value);
-
-            print $CONFIG $fileAttributes->{$attr} . '="' . $value . "\"\n";
-        }
-        foreach my $param (keys %$fileParameters) {
-            print $CONFIG $param . '="' . $fileParameters->{$param} . "\"\n";
-        }
-        close $CONFIG;
-    }
 
     if (exists $attributes->{METRIC_CONFIG_FILE}) {
         $options .= $attributes->{METRIC_CONFIG_FILE} . ' '  . $finalFileName . ' ';
@@ -1718,10 +1695,14 @@ sub _genServices {
             my $passive = $self->{SITEDB}->metricFlag($host, $metric, "PASSIVE");
             my $isNrpe = $self->{NRPE_UI} && $self->{SITEDB}->metricFlag($host, $metric, "NRPE");
             my $serviceType = join (',', $self->{SITEDB}->metricServices($host, $metric));
-            my $obsess = $self->{SITEDB}->metricFlag($host, $metric, "OBSESS") || 0;
+            my $obsess = 1;
             my $contactgroupLocal = $contactgroup;
             my $roc = $self->{SITEDB}->siteROC || $self->{ROC};
             my $metricVo = $self->{SITEDB}->metricFlag($host, $metric, "VO");
+
+            if ($self->{SITEDB}->metricFlag($host, $metric, "NOPUBLISH")) {
+                $obsess = 0;
+            }
 
             my $custom = {};
             $custom->{"_site_name"} = $sitename;
@@ -2415,7 +2396,7 @@ reference that can contain following elements:
   VO - which VO credentials should be used for local probes. It is possible
   to define multiple VOs with comma separated list:
     VO = vo1,vo2,vo3,...
-  (default: dteam)
+  (default: ops)
 
   VO_<VO>_DEFAULT_VO_FQAN - if defined NCG will generate all checks for
   listed FQANs on profiles which are not tied to FQANs. In case of
@@ -2426,7 +2407,7 @@ reference that can contain following elements:
   
   VO_HOST_FILTER - if defined NCG will generate configuration only for hosts 
   that support defined VOs.
-  (default: 1)
+  (default: 0)
 
 Constructor checks if all templates are present and if output directory
 is writeable.

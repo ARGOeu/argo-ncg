@@ -219,8 +219,6 @@ sub addLocalMetric
     my $config = shift;
     my $attributes = shift;
     my $parameters = shift;
-    my $fileAttributes = shift;
-    my $fileParameters = shift;
     my $dependencies = shift;
     my $flags = shift;
     my $parent = shift;
@@ -257,8 +255,6 @@ sub addLocalMetric
         $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{CONFIG} = $config;
         $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{ATTRIBUTES} = $attributes;
         $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{PARAMETERS} = $parameters;
-        $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{FILE_ATTRIBUTES} = $fileAttributes;
-        $self->{HOSTS}->{$host}->{METRICS}->{$metric}->{FILE_PARAMETERS} = $fileParameters;
     }
     
     $self->{METRIC_COUNT}++;
@@ -1032,44 +1028,6 @@ sub metricAttribute
     }
 }
 
-sub metricFileAttributes
-{
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    my $host = shift || return;
-    my $metric = shift || return;
-    my $value = shift;
-
-    $self->_metricField ($host, $metric, "FILE_ATTRIBUTES", $value);
-}
-
-sub metricFileAttribute
-{
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    my $host = shift;
-    my $metric = shift || return;
-    my $attr = shift || return;
-    my $value = shift;
-
-    if (!$host) {
-        foreach my $hostname (keys %{$self->{HOSTS}}) {
-            if (exists $self->{HOSTS}->{$hostname}->{METRICS}->{$metric}) {
-                $self->_metricHashField ($hostname, $metric, "FILE_ATTRIBUTES", $attr, $value);
-            }
-        }
-        if (exists $self->{METRICS}->{$metric}) {
-            $self->{METRICS}->{$metric}->{FILE_ATTRIBUTES}->{$attr} = $value;
-        }
-    } else {
-        $self->_metricHashField ($host, $metric, "FILE_ATTRIBUTES", $attr, $value);
-    }
-}
-
 sub metricParameters
 {
     my $self = shift;
@@ -1105,44 +1063,6 @@ sub metricParameter
         }
     } else {
         $self->_metricHashField ($host, $metric, "PARAMETERS", $param, $value);
-    }
-}
-
-sub metricFileParameters
-{
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    my $host = shift || return;
-    my $metric = shift || return;
-    my $value = shift;
-
-    $self->_metricField ($host, $metric, "FILE_PARAMETERS", $value);
-}
-
-sub metricFileParameter
-{
-    my $self = shift;
-
-    $self->debugSub(@_);
-
-    my $host = shift;
-    my $metric = shift || return;
-    my $param = shift || return;
-    my $value = shift;
-
-    if (!$host) {
-        foreach my $hostname (keys %{$self->{HOSTS}}) {
-            if (exists $self->{HOSTS}->{$hostname}->{METRICS}->{$metric}) {
-                $self->_metricHashField ($hostname, $metric, "FILE_PARAMETERS", $param, $value);
-            }
-        }
-        if (exists $self->{METRICS}->{$metric}) {
-            $self->{METRICS}->{$metric}->{FILE_PARAMETERS}->{$param} = $value;
-        }
-    } else {
-        $self->_metricHashField ($host, $metric, "FILE_PARAMETERS", $param, $value);
     }
 }
 
@@ -1976,10 +1896,6 @@ Structure of HOSTS is following:
                     value=parametername
       - PARAMETERS: parameters hash (local only)
                     parametername=[value]
-      - FILE_ATTRIBUTES: attributes hash (local only)
-                    value=parametername
-      - FILE_PARAMETERS: parameters hash (local only)
-                    parametername=[value]
       - DEPENDENCIES: array of metrics which metric depends on (local only)
       - PASSIVE: metric is part of a complex check, e.g. SAM tests (local only)
       - PARENT: name of the metric which is executing complex check (local only)
@@ -2044,7 +1960,6 @@ Result is 1 if operation is successful, 0 otherwise.
 
   $res = $ncg->addLocalMetric( $host, $metric, $probe,
                                $config, $attributes, $parameters,
-                               $fileAttributes, $fileParameters,
                                $dependencies, $flags, $parent, $docUrl);
 
 Adds new local metric to host. If host doesn't exist, method returns error.
@@ -2056,8 +1971,6 @@ Parameters are:
     - $config: configuration paramteres hash (name=>value)
     - $attributes: attributes hash (name=>value)
     - $parameters: parameters hash (name=>value)
-    - $fileAttributes: attributes hash to be stored to file (name=>value)
-    - $fileParameters: parameters hash to be stored to file (name=>value)
     - $dependencies: dependencies hash (parentMetric=>value); value is
     1 for host internal dependencies and 0 for external (e.g.
     GridProxy-Valid)
@@ -2069,7 +1982,7 @@ Parameters are:
       - PNP: generate action_url pointing to PNP data
       - SUDO: command is executed via sudo
       - NOHOSTNAME: command is not passed -H parameter
-      - OBSESS: metric results should be published via obsess command
+      - NOPUBLISH: metric results should NOT be published via obsess command
       - NRPE_SERVICE: metric should be executed via NRPE on service node
       - REQUIREMENT: metric should be generated if req. metric is present on 
         some site 

@@ -21,6 +21,7 @@ use NCG::SiteInfo;
 use strict;
 use LWP::UserAgent;
 use XML::DOM;
+use URI::URL;
 use vars qw(@ISA);
 
 @ISA=("NCG::SiteInfo");
@@ -39,11 +40,6 @@ sub new {
 
     if (! exists $self->{NODE_MONITORED}) {
         $self->{NODE_MONITORED} = 'Y';
-    }
-
-    if ($self->{SCOPE} && $self->{SCOPE} !~ /Local/) {
-        $self->error("Incorrect SCOPE value, acceptable values are: Local.");
-        return;
     }
 
     if (! exists $self->{URL_TYPE}) {
@@ -77,7 +73,7 @@ sub getData {
         $content = <$fileHndl>;
         close $fileHndl;
     } else {
-        my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1, ssl_opts => { SSL_ca_path => '/etc/grid-security/certificates' });
+        my $ua = LWP::UserAgent->new(timeout=>$self->{TIMEOUT}, env_proxy=>1);
         $ua->agent("NCG::SiteInfo::GOCDB");
 
         my $url;
@@ -92,6 +88,7 @@ sub getData {
         } else {
             $url = $self->{GOCDB_ROOT_URL};
         }
+
         my $req = HTTP::Request->new(GET => $url);
 
         if ( $self->{USERNAME} && $self->{PASSWORD} ) {
@@ -204,6 +201,16 @@ sub getData {
                     if ($child) {
                         my $value = $child->getNodeValue();
                         if ($value) {
+                            my $url;
+                            eval {
+                                $url = url($value);
+                            };
+                            unless ($@) {
+                                eval { $self->{SITEDB}->hostAttribute($hostname, 'PORT', $url->port) if ($url->port); };
+                                eval { $self->{SITEDB}->hostAttribute($hostname, 'PATH', $url->path) if ($url->path); };
+                                eval { $self->{SITEDB}->hostAttribute($hostname, 'SSL', 0) if ($url->scheme && $url->scheme eq 'https'); };
+                            }
+                            $self->{SITEDB}->hostAttribute($hostname, 'URL', $value);
                             $self->{SITEDB}->hostAttribute($hostname, $serviceType."_URL", $value);
                         }
                     }
