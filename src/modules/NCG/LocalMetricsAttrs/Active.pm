@@ -414,6 +414,7 @@ sub _setDefaultPorts {
     $self->{SITEDB}->globalAttribute("STOMP_SSL_PORT", 6162);
     $self->{SITEDB}->globalAttribute("OPENWIRE_PORT", 6166);
     $self->{SITEDB}->globalAttribute("OPENWIRE_SSL_PORT", 6167);
+    $self->{SITEDB}->globalAttribute("HTCondorCE_PORT", 9619);
 }
 
 # TODO:
