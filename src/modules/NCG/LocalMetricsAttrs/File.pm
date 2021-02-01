@@ -19,6 +19,7 @@ package NCG::LocalMetricsAttrs::File;
 
 use NCG::LocalMetricsAttrs;
 use strict;
+use Text::CSV_XS;
 use vars qw(@ISA);
 
 @ISA=("NCG::LocalMetricsAttrs");
@@ -70,39 +71,37 @@ sub _loadMetricAttrs {
     my $services = shift;
     my $line;
     my $fileHndl;
+    my $csv = Text::CSV_XS->new( {sep_char=>'!'} );
 
     foreach my $file (keys %{$self->{DB_FILES}}) {
         if (!open ($fileHndl, $file)) {
             $self->error("Cannot open static file!");
             return 0;
         }
-        while ($line = <$fileHndl>) {
-            next if ($line =~ /^\s*#.*$/);
-            if ($line =~ /^\s*(\S+?)!(\S+?)!(\S.*?)(!(\S.*?))?(!(\S.*?))?\s*$/) {
-                my $action = $1;
-                if ($action eq "ATTRIBUTE") {
-                    $attributes->{global}->{$2} = $3;
-                } elsif ($action eq "HOST_ATTRIBUTE") {
-                    $hosts->{global}->{$2}->{$3} = $5;
-                } elsif ($action eq "SERVICE_ATTRIBUTE") {
-                    $services->{global}->{$2}->{$3} = $5;
-                } elsif ($action eq "VO_ATTRIBUTE") {
-                    $attributes->{vo}->{$2}->{$3} = $5;
-                } elsif ($action eq "VO_HOST_ATTRIBUTE") {
-                    $hosts->{vo}->{$2}->{$3}->{$5} = $7;
-                } elsif ($action eq "VO_SERVICE_ATTRIBUTE") {
-                    $services->{vo}->{$2}->{$3}->{$5} = $7;
-                } elsif ($action eq "GLOBAL_ATTRIBUTE") {
-                    $globalAttributes->{global}->{$2} = $3;
-                } elsif ($action eq "VO_GLOBAL_ATTRIBUTE") {
-                    $globalAttributes->{vo}->{$2}->{$3} = $5;
-                } elsif ($action eq "HOST_ARRAY_ATTRIBUTE") {
-                    $hosts->{array}->{$2}->{$3} = $5;
-                } elsif ($action eq "VO_HOST_ARRAY_ATTRIBUTE") {
-                    $hosts->{vo_array}->{$2}->{$3}->{$5} = $7;
-                } else {
-                    $self->debug("Unknown command found: $1");
-                }
+        while (my $row = $csv->getline ($fileHndl)) {
+            my $action = $row->[0];
+            if ($action eq "ATTRIBUTE") {
+                $attributes->{global}->{$row->[1]} = $row->[2];
+            } elsif ($action eq "HOST_ATTRIBUTE") {
+                $hosts->{global}->{$row->[1]}->{$row->[2]} = $row->[3];
+            } elsif ($action eq "SERVICE_ATTRIBUTE") {
+                $services->{global}->{$row->[1]}->{$row->[2]} = $row->[3];
+            } elsif ($action eq "VO_ATTRIBUTE") {
+                $attributes->{vo}->{$row->[1]}->{$row->[2]} = $row->[3];
+            } elsif ($action eq "VO_HOST_ATTRIBUTE") {
+                $hosts->{vo}->{$row->[1]}->{$row->[2]}->{$row->[3]} = $row->[4];
+            } elsif ($action eq "VO_SERVICE_ATTRIBUTE") {
+                $services->{vo}->{$row->[1]}->{$row->[2]}->{$row->[3]} = $row->[4];
+            } elsif ($action eq "GLOBAL_ATTRIBUTE") {
+                $globalAttributes->{global}->{$row->[1]} = $row->[2];
+            } elsif ($action eq "VO_GLOBAL_ATTRIBUTE") {
+                $globalAttributes->{vo}->{$row->[1]}->{$row->[2]} = $row->[3];
+            } elsif ($action eq "HOST_ARRAY_ATTRIBUTE") {
+                $hosts->{array}->{$row->[1]}->{$row->[2]} = $row->[3];
+            } elsif ($action eq "VO_HOST_ARRAY_ATTRIBUTE") {
+                $hosts->{vo_array}->{$row->[1]}->{$row->[2]}->{$row->[3]} = $row->[4];
+            } else {
+                $self->debug("Unknown command found: $action");
             }
         }
         close ($fileHndl);

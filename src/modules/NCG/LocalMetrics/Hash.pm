@@ -64,6 +64,8 @@ sub getData {
                 if ($self->{INCLUDE_PROXY_CHECKS} && $service eq 'NAGIOS') {
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.GridProxy-Valid';
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.GridProxy-Get';
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'argo.OIDC.RefreshToken';
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'argo.OIDC.CheckRefreshTokenValidity';
                 }
 
                 foreach my $metric (@{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}) {
