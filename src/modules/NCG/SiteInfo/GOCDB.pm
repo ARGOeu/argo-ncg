@@ -212,6 +212,8 @@ sub getData {
                             }
                             $self->{SITEDB}->hostAttribute($hostname, 'URL', $value);
                             $self->{SITEDB}->hostAttribute($hostname, $serviceType."_URL", $value);
+                            $self->{SITEDB}->hostAttribute($hostname, 'GOCDB_SERVICE_URL', $value);
+                            $self->{SITEDB}->hostAttribute($hostname, $serviceType."_GOCDB_SERVICE_URL", $value);
                         }
                     }
                 }
