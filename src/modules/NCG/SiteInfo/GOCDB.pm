@@ -197,6 +197,7 @@ sub getData {
                     }
                 }
                 foreach $elem ($site->getElementsByTagName("URL")) {
+                    next unless ($elem->getParentNode->getTagName() eq "SERVICE_ENDPOINT");
                     my $child = $elem->getFirstChild;
                     if ($child) {
                         my $value = $child->getNodeValue();
@@ -219,7 +220,7 @@ sub getData {
                 }
                 foreach my $endpoint ($site->getElementsByTagName("ENDPOINT")) {
                     my $monitored = "";
-                    foreach $elem ($site->getElementsByTagName("ENDPOINT_MONITORED")) {
+                    foreach $elem ($endpoint->getElementsByTagName("ENDPOINT_MONITORED")) {
                         my $value = $elem->getFirstChild->getNodeValue();
                         if ($value) {
                             $monitored = $value;
