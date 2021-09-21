@@ -109,6 +109,7 @@ sub getData
         my $url;
         my $hostname;
         my $serviceSiteName = $service->{'SITENAME-SERVICEGROUP'} || next;
+        $serviceSiteName =~ s/\,//g;
         next if ( $serviceSiteName ne $sitename );
         if ( !$service->{'Service Unique ID'} || !$service->{SERVICE_TYPE} ) {
             $self->error("Entry for $serviceSiteName is missing 'Service Unique ID' and/or 'SERVICE_TYPE'");
