@@ -15,19 +15,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-package NCG::SiteSet::WEBAPI;
+package NCG::SiteInfo::WEBAPI;
 
 use strict;
 use warnings;
-use NCG::SiteSet;
+use NCG::SiteInfo;
 use vars qw(@ISA);
 use JSON; 
 use LWP::UserAgent;
 
-@ISA=("NCG::SiteSet");
+@ISA=("NCG::SiteInfo");
 
 my $DEFAULT_WEBAPI_ROOT_URL = "https://api.argo.grnet.gr/";
-my $DEFAULT_WEBAPI_ROOT_URL_SUFFIX = "/api/v2/topology/groups";
+my $DEFAULT_WEBAPI_ROOT_URL_SUFFIX = "/api/v2/topology/endpoints";
 
 sub new
 {
@@ -39,16 +39,8 @@ sub new
         $self->{WEBAPI_ROOT_URL} = $DEFAULT_WEBAPI_ROOT_URL;
     }
 
-    if (! exists $self->{SITE_MONITORED}) {
-        $self->{SITE_MONITORED} = 'Y';
-    }
-
-    if (! exists $self->{PROD_STATUS}) {
-        $self->{PROD_STATUS} = 'Production';
-    }
-
-    if (! exists $self->{CERT_STATUS}) {
-        $self->{CERT_STATUS} = 'Certified';
+    if (! exists $self->{NODE_MONITORED}) {
+        $self->{NODE_MONITORED} = '1';
     }
 
     if (! $self->{TOKEN}) {
@@ -59,23 +51,26 @@ sub new
         $self->{TIMEOUT} = $self->{DEFAULT_HTTP_TIMEOUT};
     }
 
+    if (! exists $self->{VO}) {
+        $self->{VO} = 'ops';
+    }
+
     $self;
 }
 
 sub getData {
     my $self = shift;
+    my $sitename = shift || $self->{SITENAME};
+    my $poemService = {};
     my $url;
 
     my $ua = LWP::UserAgent->new( timeout=>$self->{TIMEOUT}, env_proxy=>1 );
-    $ua->agent("NCG::SiteSet::WEBAPI");
+    $ua->agent("NCG::SiteInfo::WEBAPI");
     $url = $self->{WEBAPI_ROOT_URL} . $DEFAULT_WEBAPI_ROOT_URL_SUFFIX;
-    $url .= '?type=NGI';
+    $url .= '?type=SITES&group='.$sitename;
     my @tags;
-    if ($self->{CERT_STATUS}) {
-        push @tags, 'certification:' . $self->{CERT_STATUS};
-    }
-    if ($self->{PROD_STATUS}) {
-        push @tags, 'infrastructure:' . $self->{PROD_STATUS};
+    if ($self->{NODE_MONITORED}) {
+        push @tags, 'monitored:' . $self->{NODE_MONITORED};
     }
     if ($self->{SCOPE}) {
         push @tags, 'scope:' . $self->{SCOPE};
@@ -122,16 +117,39 @@ sub getData {
         return;
     }
 
-    foreach my $site (@{$jsonRef->{data}}) {
-        my $sitename = $site->{subgroup};
-        my $roc = $site->{group};
+    foreach my $service (@{$jsonRef->{data}}) {
+        my $sitename = $service->{group};
+        my $hostname  = $service->{hostname};
+        my $serviceType = $service->{service};
 
-        $self->verbose ("Found site: $sitename.");
+        $self->{SITEDB}->addHost($hostname);
+        $self->{SITEDB}->addService($hostname, $serviceType);
+        $self->{SITEDB}->addVO($hostname, $serviceType, $self->{VO});
+        $self->{SITEDB}->siteLDAP($hostname) if ($serviceType eq 'Site-BDII');
 
-        if (!exists $self->{SITES}->{$sitename}) {
-            $self->{SITES}->{$sitename} = NCG::SiteDB->new ({SITENAME=>$sitename, ROC=>$roc});
-        } else {
-            $self->{SITES}->{$sitename}->siteROC($roc) if ($roc);
+        foreach my $tag (keys %{$service->{tags}}) {
+            if ( $tag =~ /^info_ext_(\S+)$/i ) {
+                $self->{SITEDB}->hostAttribute($hostname, $1, $service->{tags}->{$tag});
+            } elsif ( $tag eq 'info_URL' ) {
+                my $url;
+                my $value = $service->{tags}->{$tag};
+                eval {
+                    $url = url($value);
+                };
+                unless ($@) {
+                    eval { $self->{SITEDB}->hostAttribute($hostname, 'PORT', $url->port) if ($url->port); };
+                    eval { $self->{SITEDB}->hostAttribute($hostname, 'PATH', $url->path) if ($url->path); };
+                    eval { $self->{SITEDB}->hostAttribute($hostname, 'SSL', 0) if ($url->scheme && $url->scheme eq 'https'); };
+                }
+                $self->{SITEDB}->hostAttribute($hostname, 'URL', $value);
+                $self->{SITEDB}->hostAttribute($hostname, $serviceType."_URL", $value);
+                $self->{SITEDB}->hostAttribute($hostname, 'GOCDB_SERVICE_URL', $value);
+                $self->{SITEDB}->hostAttribute($hostname, $serviceType."_GOCDB_SERVICE_URL", $value);
+            } elsif ( $tag eq 'info_service_endpoint_URL' ) {
+                foreach my $url ( split (/, /, $service->{tags}->{$tag}) ) {
+                    $self->{SITEDB}->hostAttribute($hostname, $serviceType."_URL", $url);
+                }
+            }
         }
     }
 
@@ -141,18 +159,18 @@ sub getData {
 
 =head1 NAME
 
-NCG::SiteSet::WEBAPI
+NCG::SiteInfo::WEBAPI
 
 =head1 DESCRIPTION
 
-The NCG::SiteSet::WEBAPI module extends NCG::SiteSet module.
+The NCG::SiteInfo::WEBAPI module extends NCG::SiteInfo module.
 Module extracts list of sites from ARGO WEBAPI component.
 
 =head1 SYNOPSIS
 
-  use NCG::SiteSet::WEBAPI;
+  use NCG::SiteInfo::WEBAPI;
 
-  my $lms = NCG::SiteSet::WEBAPI->new( { SITEDB=> $sitedb} );
+  my $lms = NCG::SiteInfo::WEBAPI->new( { SITEDB=> $sitedb} );
 
   $lms->getData();
 
@@ -164,9 +182,9 @@ Module extracts list of sites from ARGO WEBAPI component.
 
 =item C<new>
 
-  $siteInfo = NCG::SiteSet::WEBAPI->new( $options );
+  $siteInfo = NCG::SiteInfo::WEBAPI->new( $options );
 
-Creates new NCG::SiteSet::WEBAPI instance. Argument $options is hash
+Creates new NCG::SiteInfo::WEBAPI instance. Argument $options is hash
 reference that can contain following elements:
     WEBAPI_ROOT_URL - WEBAPI JSON API root URL
     (default: https://api.argo.grnet.gr)
@@ -190,7 +208,7 @@ reference that can contain following elements:
 
 =head1 SEE ALSO
 
-NCG::SiteSet
+NCG::SiteInfo
 
 =cut
 
