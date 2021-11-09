@@ -78,7 +78,7 @@ sub getData {
         push @tags, 'infrastructure:' . $self->{PROD_STATUS};
     }
     if ($self->{SCOPE}) {
-        push @tags, 'scope:' . $self->{SCOPE};
+        push @tags, 'scope:*'.$self->{SCOPE}.'*';
     }
     if (@tags) {
         $url .= '&tags='.join(',',@tags);
