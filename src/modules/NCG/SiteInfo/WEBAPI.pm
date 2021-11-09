@@ -73,7 +73,7 @@ sub getData {
         push @tags, 'monitored:' . $self->{NODE_MONITORED};
     }
     if ($self->{SCOPE}) {
-        push @tags, 'scope:' . $self->{SCOPE};
+        push @tags, 'scope:*'.$self->{SCOPE}.'*';
     }
     if (@tags) {
         $url .= '&tags='.join(',',@tags);
