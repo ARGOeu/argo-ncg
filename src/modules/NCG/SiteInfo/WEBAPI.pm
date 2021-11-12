@@ -23,6 +23,7 @@ use NCG::SiteInfo;
 use vars qw(@ISA);
 use JSON; 
 use LWP::UserAgent;
+use URI::URL;
 
 @ISA=("NCG::SiteInfo");
 
