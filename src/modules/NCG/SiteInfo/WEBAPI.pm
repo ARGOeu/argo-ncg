@@ -51,6 +51,9 @@ sub new
     if (! exists $self->{TIMEOUT}) {
         $self->{TIMEOUT} = $self->{DEFAULT_HTTP_TIMEOUT};
     }
+    if (! exists $self->{TYPE}) {
+        $self->{TYPE} = 'SITES';
+    }
 
     if (! exists $self->{VO}) {
         $self->{VO} = 'ops';
@@ -68,7 +71,7 @@ sub getData {
     my $ua = LWP::UserAgent->new( timeout=>$self->{TIMEOUT}, env_proxy=>1 );
     $ua->agent("NCG::SiteInfo::WEBAPI");
     $url = $self->{WEBAPI_ROOT_URL} . $DEFAULT_WEBAPI_ROOT_URL_SUFFIX;
-    $url .= '?type=SITES&group='.$sitename;
+    $url .= '?type=' . $self->{TYPE} . '&group=' . $sitename;
     my @tags;
     if ($self->{NODE_MONITORED}) {
         push @tags, 'monitored:' . $self->{NODE_MONITORED};
@@ -131,7 +134,7 @@ sub getData {
         foreach my $tag (keys %{$service->{tags}}) {
             if ( $tag =~ /^info_ext_(\S+)$/i ) {
                 $self->{SITEDB}->hostAttribute($hostname, $1, $service->{tags}->{$tag});
-            } elsif ( $tag eq 'info_URL' ) {
+            } elsif ( $tag eq 'info_URL' || $tag eq 'info.URL' ) {
                 my $url;
                 my $value = $service->{tags}->{$tag};
                 eval {
@@ -198,6 +201,10 @@ reference that can contain following elements:
 
     SCOPE - scope of sites
     (default: )
+
+    TYPE - type of groups fetched from WEBAPI, EGI uses SITES,
+    most other tenants SERVICEGROUPS
+    (default: SITES)
 
     TIMEOUT - HTTP timeout
     (default: DEFAULT_HTTP_TIMEOUT inherited from NCG)
