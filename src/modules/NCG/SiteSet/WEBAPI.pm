@@ -51,6 +51,10 @@ sub new
         $self->{CERT_STATUS} = 'Certified';
     }
 
+    if (! exists $self->{TYPE}) {
+        $self->{TYPE} = 'NGI';
+    }
+
     if (! $self->{TOKEN}) {
         $self->error("Authentication token must be defined.");
         return;
@@ -69,7 +73,7 @@ sub getData {
     my $ua = LWP::UserAgent->new( timeout=>$self->{TIMEOUT}, env_proxy=>1 );
     $ua->agent("NCG::SiteSet::WEBAPI");
     $url = $self->{WEBAPI_ROOT_URL} . $DEFAULT_WEBAPI_ROOT_URL_SUFFIX;
-    $url .= '?type=NGI';
+    $url .= '?type' . $self->{TYPE};
     my @tags;
     if ($self->{CERT_STATUS}) {
         push @tags, 'certification:' . $self->{CERT_STATUS};
@@ -179,6 +183,10 @@ reference that can contain following elements:
 
     SCOPE - scope of sites
     (default: )
+
+    TYPE - type of groups fetched from WEBAPI, EGI uses NGI,
+    most other tenants PROJECT
+    (default: NGI)
 
     TIMEOUT - HTTP timeout
     (default: DEFAULT_HTTP_TIMEOUT inherited from NCG)
