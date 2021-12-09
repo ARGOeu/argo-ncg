@@ -39,18 +39,6 @@ sub new
         $self->{WEBAPI_ROOT_URL} = $DEFAULT_WEBAPI_ROOT_URL;
     }
 
-    if (! exists $self->{SITE_MONITORED}) {
-        $self->{SITE_MONITORED} = 'Y';
-    }
-
-    if (! exists $self->{PROD_STATUS}) {
-        $self->{PROD_STATUS} = 'Production';
-    }
-
-    if (! exists $self->{CERT_STATUS}) {
-        $self->{CERT_STATUS} = 'Certified';
-    }
-
     if (! exists $self->{TYPE}) {
         $self->{TYPE} = 'NGI';
     }
@@ -172,14 +160,12 @@ Module extracts list of sites from ARGO WEBAPI component.
 
 Creates new NCG::SiteSet::WEBAPI instance. Argument $options is hash
 reference that can contain following elements:
-    WEBAPI_ROOT_URL - WEBAPI JSON API root URL
-    (default: https://api.argo.grnet.gr)
-
-    PROD_STATUS - production status of site
-    (default: Production)
 
     CERT_STATUS - certification status of site
-    (default: Certified)
+    (default: )
+
+    PROD_STATUS - production status of site
+    (default: )
 
     SCOPE - scope of sites
     (default: )
@@ -193,6 +179,9 @@ reference that can contain following elements:
     
     TOKEN - token used for WEBAPI API authentication
     (default: )
+
+    WEBAPI_ROOT_URL - WEBAPI JSON API root URL
+    (default: https://api.argo.grnet.gr)
 
 =back
 

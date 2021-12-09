@@ -59,6 +59,10 @@ sub new
         $self->{VO} = 'ops';
     }
 
+    if (! exists $self->{USE_IDS}) {
+        $self->{USE_IDS} = 0;
+    }
+
     $self;
 }
 
@@ -123,10 +127,20 @@ sub getData {
 
     foreach my $service (@{$jsonRef->{data}}) {
         my $sitename = $service->{group};
-        my $hostname  = $service->{hostname};
+        my $hostname = $service->{hostname};
         my $serviceType = $service->{service};
 
-        $self->{SITEDB}->addHost($hostname);
+        if (exists $service->{tags}->{hostname}) {
+            $hostname = $service->{tags}->{hostname};
+        }
+
+        if ($self->{USE_IDS} && exists $service->{tags}->{info_id} && $service->{tags}->{info_id}) {
+            $self->{SITEDB}->addHost($hostname, $service->{tags}->{info_id});
+            $hostname .= '_' . $service->{tags}->{info_id};
+        } else {
+            $self->{SITEDB}->addHost($hostname);
+        }
+
         $self->{SITEDB}->addService($hostname, $serviceType);
         $self->{SITEDB}->addVO($hostname, $serviceType, $self->{VO});
         $self->{SITEDB}->siteLDAP($hostname) if ($serviceType eq 'Site-BDII');
@@ -153,6 +167,8 @@ sub getData {
                 foreach my $url ( split (/, /, $service->{tags}->{$tag}) ) {
                     $self->{SITEDB}->hostAttribute($hostname, $serviceType."_URL", $url);
                 }
+            } elsif ( $tag =~ /^vo_(\S+?)_attr_(\S+)$/ ) {
+                $self->{SITEDB}->hostAttributeVO($hostname, $2, $1, $service->{tags}->{$tag});
             }
         }
     }
@@ -190,14 +206,9 @@ Module extracts list of sites from ARGO WEBAPI component.
 
 Creates new NCG::SiteInfo::WEBAPI instance. Argument $options is hash
 reference that can contain following elements:
-    WEBAPI_ROOT_URL - WEBAPI JSON API root URL
-    (default: https://api.argo.grnet.gr)
 
-    PROD_STATUS - production status of site
-    (default: Production)
-
-    CERT_STATUS - certification status of site
-    (default: Certified)
+    NODE_MONITORED - filter only endpoints with tag monitored
+    (default: )
 
     SCOPE - scope of sites
     (default: )
@@ -211,6 +222,12 @@ reference that can contain following elements:
     
     TOKEN - token used for WEBAPI API authentication
     (default: )
+
+    USE_IDS - use IDs for Nagios hostnames
+    (default: false)
+
+    WEBAPI_ROOT_URL - WEBAPI JSON API root URL
+    (default: https://api.argo.grnet.gr)
 
 =back
 
