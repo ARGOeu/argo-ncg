@@ -206,20 +206,12 @@ Module extracts list of sites from ARGO WEBAPI component.
 
 Creates new NCG::SiteInfo::WEBAPI instance. Argument $options is hash
 reference that can contain following elements:
-    WEBAPI_ROOT_URL - WEBAPI JSON API root URL
-    (default: https://api.argo.grnet.gr)
 
-    PROD_STATUS - production status of site
-    (default: Production)
-
-    CERT_STATUS - certification status of site
-    (default: Certified)
+    NODE_MONITORED - filter only endpoints with tag monitored
+    (default: )
 
     SCOPE - scope of sites
     (default: )
-
-    USE_IDS - use IDs for Nagios hostnames
-    (default: false)
 
     TYPE - type of groups fetched from WEBAPI, EGI uses SITES,
     most other tenants SERVICEGROUPS
@@ -230,6 +222,12 @@ reference that can contain following elements:
     
     TOKEN - token used for WEBAPI API authentication
     (default: )
+
+    USE_IDS - use IDs for Nagios hostnames
+    (default: false)
+
+    WEBAPI_ROOT_URL - WEBAPI JSON API root URL
+    (default: https://api.argo.grnet.gr)
 
 =back
 
