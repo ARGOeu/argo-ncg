@@ -59,6 +59,10 @@ sub new
         $self->{VO} = 'ops';
     }
 
+    if (! exists $self->{USE_IDS}) {
+        $self->{USE_IDS} = 0;
+    }
+
     $self;
 }
 
@@ -123,10 +127,20 @@ sub getData {
 
     foreach my $service (@{$jsonRef->{data}}) {
         my $sitename = $service->{group};
-        my $hostname  = $service->{hostname};
+        my $hostname = $service->{hostname};
         my $serviceType = $service->{service};
 
-        $self->{SITEDB}->addHost($hostname);
+        if (exists $service->{tags}->{hostname}) {
+            $hostname = $service->{tags}->{hostname};
+        }
+
+        if ($self->{USE_IDS} && exists $service->{tags}->{info_id} && $service->{tags}->{info_id}) {
+            $self->{SITEDB}->addHost($hostname, $service->{tags}->{info_id});
+            $hostname .= '_' . $service->{tags}->{info_id};
+        } else {
+            $self->{SITEDB}->addHost($hostname);
+        }
+
         $self->{SITEDB}->addService($hostname, $serviceType);
         $self->{SITEDB}->addVO($hostname, $serviceType, $self->{VO});
         $self->{SITEDB}->siteLDAP($hostname) if ($serviceType eq 'Site-BDII');
@@ -153,6 +167,8 @@ sub getData {
                 foreach my $url ( split (/, /, $service->{tags}->{$tag}) ) {
                     $self->{SITEDB}->hostAttribute($hostname, $serviceType."_URL", $url);
                 }
+            } elsif ( $tag =~ /^vo_(\S+?)_attr_(\S+)$/ ) {
+                $self->{SITEDB}->hostAttributeVO($hostname, $2, $1, $service->{tags}->{$tag});
             }
         }
     }
@@ -201,6 +217,9 @@ reference that can contain following elements:
 
     SCOPE - scope of sites
     (default: )
+
+    USE_IDS - use IDs for Nagios hostnames
+    (default: false)
 
     TYPE - type of groups fetched from WEBAPI, EGI uses SITES,
     most other tenants SERVICEGROUPS
