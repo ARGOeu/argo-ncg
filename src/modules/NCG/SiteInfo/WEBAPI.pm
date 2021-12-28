@@ -134,9 +134,9 @@ sub getData {
             $hostname = $service->{tags}->{hostname};
         }
 
-        if ($self->{USE_IDS} && exists $service->{tags}->{info_id} && $service->{tags}->{info_id}) {
-            $self->{SITEDB}->addHost($hostname, $service->{tags}->{info_id});
-            $hostname .= '_' . $service->{tags}->{info_id};
+        if ($self->{USE_IDS} && exists $service->{tags}->{info_ID} && $service->{tags}->{info_ID}) {
+            $self->{SITEDB}->addHost($hostname, $service->{tags}->{info_ID});
+            $hostname .= '_' . $service->{tags}->{info_ID};
         } else {
             $self->{SITEDB}->addHost($hostname);
         }
@@ -147,6 +147,8 @@ sub getData {
 
         foreach my $tag (keys %{$service->{tags}}) {
             if ( $tag =~ /^info_ext_(\S+)$/i ) {
+                $self->{SITEDB}->hostAttribute($hostname, $1, $service->{tags}->{$tag});
+            } elsif ( $tag =~ /^info_bdii_(\S+)$/i ) {
                 $self->{SITEDB}->hostAttribute($hostname, $1, $service->{tags}->{$tag});
             } elsif ( $tag eq 'info_URL' || $tag eq 'info.URL' ) {
                 my $url;
@@ -167,6 +169,8 @@ sub getData {
                 foreach my $url ( split (/, /, $service->{tags}->{$tag}) ) {
                     $self->{SITEDB}->hostAttribute($hostname, $serviceType."_URL", $url);
                 }
+            } elsif ( $tag =~ /^info_(\S+)$/i ) {
+                $self->{SITEDB}->hostAttribute($hostname, $1, $service->{tags}->{$tag});
             } elsif ( $tag =~ /^vo_(\S+?)_attr_(\S+)$/ ) {
                 $self->{SITEDB}->hostAttributeVO($hostname, $2, $1, $service->{tags}->{$tag});
             }
