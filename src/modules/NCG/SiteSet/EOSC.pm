@@ -102,6 +102,7 @@ sub getData
 
     foreach my $site (@{$jsonRef}) {
         my $sitename = $site->{'SITENAME-SERVICEGROUP'};
+        $sitename =~ s/\,//g;
         my $country = $site->{'COUNTRY_NAME'};
         $self->verbose ("Found site: $sitename");
         if (!exists $self->{SITES}->{$sitename}) {

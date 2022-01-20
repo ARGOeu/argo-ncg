@@ -197,6 +197,7 @@ sub getData {
                     }
                 }
                 foreach $elem ($site->getElementsByTagName("URL")) {
+                    next unless ($elem->getParentNode->getTagName() eq "SERVICE_ENDPOINT");
                     my $child = $elem->getFirstChild;
                     if ($child) {
                         my $value = $child->getNodeValue();
@@ -212,12 +213,14 @@ sub getData {
                             }
                             $self->{SITEDB}->hostAttribute($hostname, 'URL', $value);
                             $self->{SITEDB}->hostAttribute($hostname, $serviceType."_URL", $value);
+                            $self->{SITEDB}->hostAttribute($hostname, 'GOCDB_SERVICE_URL', $value);
+                            $self->{SITEDB}->hostAttribute($hostname, $serviceType."_GOCDB_SERVICE_URL", $value);
                         }
                     }
                 }
                 foreach my $endpoint ($site->getElementsByTagName("ENDPOINT")) {
                     my $monitored = "";
-                    foreach $elem ($site->getElementsByTagName("ENDPOINT_MONITORED")) {
+                    foreach $elem ($endpoint->getElementsByTagName("ENDPOINT_MONITORED")) {
                         my $value = $elem->getFirstChild->getNodeValue();
                         if ($value) {
                             $monitored = $value;

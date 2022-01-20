@@ -5,7 +5,7 @@
 
 Summary: ARGO Nagios config generator
 Name: argo-ncg
-Version: 0.4.12
+Version: 0.4.13
 Release: 1%{?dist}
 License: ASL 2.0
 Group: Network/Monitoring
@@ -15,6 +15,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
 Requires: perl-libwww-perl > 5.833-2
 Requires: psmisc
+Requires: perl(JSON::XS)
 %if 0%{?el7:1}
 Requires: perl(LWP::Protocol::https)
 %endif
@@ -95,6 +96,8 @@ if [ -f /etc/init.d/ncg ] ; then
 fi
 
 %changelog
+* Thu Jan 20 2022 Emir Imamagic <eimamagi@srce.hr - 0.4.13-1
+- Version bump
 * Mon Feb 1 2021 Emir Imamagic <eimamagi@srce.hr - 0.4.12-1
 - Version bump
 * Fri May 8 2020 Emir Imamagic <eimamagi@srce.hr - 0.4.11-1

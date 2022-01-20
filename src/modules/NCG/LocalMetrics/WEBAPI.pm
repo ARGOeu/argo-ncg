@@ -55,6 +55,9 @@ sub new
     if (! $self->{VO}) {
         $self->{VO} = 'ops';
     }
+    if (! exists $self->{TIMEOUT}) {
+        $self->{TIMEOUT} = $self->{DEFAULT_HTTP_TIMEOUT};
+    }
 
     $self;
 }
@@ -167,18 +170,18 @@ sub getData {
 
 =head1 NAME
 
-NCG::LocalMetrics::POEM
+NCG::LocalMetrics::WEBAPI
 
 =head1 DESCRIPTION
 
-The NCG::LocalMetrics::POEM module extends NCG::LocalMetrics module.
-Module extracts metric information from hard-coded POEM.
+The NCG::LocalMetrics::WEBAPI module extends NCG::LocalMetrics module.
+Module extracts metric information from ARGO WEBAPI.
 
 =head1 SYNOPSIS
 
-  use NCG::LocalMetrics::POEM;
+  use NCG::LocalMetrics::WEBAPI;
 
-  my $lms = NCG::LocalMetrics::POEM->new( { SITEDB=> $sitedb} );
+  my $lms = NCG::LocalMetrics::WEBAPI->new( { SITEDB=> $sitedb} );
 
   $lms->getData();
 
@@ -190,18 +193,23 @@ Module extracts metric information from hard-coded POEM.
 
 =item C<new>
 
-  $siteInfo = NCG::LocalMetrics::POEM->new( $options );
+  $siteInfo = NCG::LocalMetrics::WEBAPI->new( $options );
 
-Creates new NCG::LocalMetrics::POEM instance. Argument $options is hash
+Creates new NCG::LocalMetrics::WEBAPI instance. Argument $options is hash
 reference that can contain following elements:
-    POEM_FILE - file containing JSON definition
-    (default: )
+    WEBAPI_ROOT_URL - WEBAPI JSON API root URL
+    (default: https://api.argo.grnet.gr/)
     
-    POEM_ROOT_URL - POEM JSON API root URL
-    (default: http://localhost/poem_sync)
-    
+    PROFILES - list of profiles for which metrics will be fetched
+
+    VO - VO to be associated with profiles by default (EGI-specific)
+    (default: ops)
+
     METRIC_CONFIG - metric configuration structure fetched from
     NCG::MetricConfig module
+
+    TIMEOUT - HTTP timeout
+            - default: DEFAULT_HTTP_TIMEOUT inherited from NCG
 
     TOKEN - token used for POEM API authentication
     (default: )
