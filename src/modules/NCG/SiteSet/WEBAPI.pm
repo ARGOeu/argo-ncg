@@ -59,7 +59,7 @@ sub getData {
     $url = $self->{WEBAPI_ROOT_URL} . $DEFAULT_WEBAPI_ROOT_URL_SUFFIX;
 
     if ($self->{FILTER}) {
-        $url .= '?' . $self->{FILTER} . '&group=' . $sitename;
+        $url .= '?' . $self->{FILTER};
     }
 
     my $req = HTTP::Request->new(GET => $url);
