@@ -40,19 +40,12 @@ sub new
         $self->{WEBAPI_ROOT_URL} = $DEFAULT_WEBAPI_ROOT_URL;
     }
 
-    if (! exists $self->{NODE_MONITORED}) {
-        $self->{NODE_MONITORED} = '1';
-    }
-
     if (! $self->{TOKEN}) {
         $self->error("Authentication token must be defined.");
         return;
     }
     if (! exists $self->{TIMEOUT}) {
         $self->{TIMEOUT} = $self->{DEFAULT_HTTP_TIMEOUT};
-    }
-    if (! exists $self->{TYPE}) {
-        $self->{TYPE} = 'SITES';
     }
 
     if (! exists $self->{VO}) {
@@ -75,17 +68,13 @@ sub getData {
     my $ua = LWP::UserAgent->new( timeout=>$self->{TIMEOUT}, env_proxy=>1 );
     $ua->agent("NCG::SiteInfo::WEBAPI");
     $url = $self->{WEBAPI_ROOT_URL} . $DEFAULT_WEBAPI_ROOT_URL_SUFFIX;
-    $url .= '?type=' . $self->{TYPE} . '&group=' . $sitename;
-    my @tags;
-    if ($self->{NODE_MONITORED}) {
-        push @tags, 'monitored:' . $self->{NODE_MONITORED};
+
+    if ($self->{FILTER}) {
+        $url .= '?' . $self->{FILTER} . '&group=' . $sitename;
+    } else {
+        $url .= '?group='  . $sitename;
     }
-    if ($self->{SCOPE}) {
-        push @tags, 'scope:*'.$self->{SCOPE}.'*';
-    }
-    if (@tags) {
-        $url .= '&tags='.join(',',@tags);
-    }
+
     my $req = HTTP::Request->new(GET => $url);
     $req->header('x-api-key' => $self->{TOKEN});
     $req->header('Accept' => 'application/json');
@@ -211,15 +200,8 @@ Module extracts list of sites from ARGO WEBAPI component.
 Creates new NCG::SiteInfo::WEBAPI instance. Argument $options is hash
 reference that can contain following elements:
 
-    NODE_MONITORED - filter only endpoints with tag monitored
+    FILTER - filter query that will be forwarded
     (default: )
-
-    SCOPE - scope of sites
-    (default: )
-
-    TYPE - type of groups fetched from WEBAPI, EGI uses SITES,
-    most other tenants SERVICEGROUPS
-    (default: SITES)
 
     TIMEOUT - HTTP timeout
     (default: DEFAULT_HTTP_TIMEOUT inherited from NCG)
