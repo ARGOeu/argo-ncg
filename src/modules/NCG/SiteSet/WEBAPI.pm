@@ -39,10 +39,6 @@ sub new
         $self->{WEBAPI_ROOT_URL} = $DEFAULT_WEBAPI_ROOT_URL;
     }
 
-    if (! exists $self->{TYPE}) {
-        $self->{TYPE} = 'NGI';
-    }
-
     if (! $self->{TOKEN}) {
         $self->error("Authentication token must be defined.");
         return;
@@ -61,20 +57,11 @@ sub getData {
     my $ua = LWP::UserAgent->new( timeout=>$self->{TIMEOUT}, env_proxy=>1 );
     $ua->agent("NCG::SiteSet::WEBAPI");
     $url = $self->{WEBAPI_ROOT_URL} . $DEFAULT_WEBAPI_ROOT_URL_SUFFIX;
-    $url .= '?type' . $self->{TYPE};
-    my @tags;
-    if ($self->{CERT_STATUS}) {
-        push @tags, 'certification:' . $self->{CERT_STATUS};
+
+    if ($self->{FILTER}) {
+        $url .= '?' . $self->{FILTER} . '&group=' . $sitename;
     }
-    if ($self->{PROD_STATUS}) {
-        push @tags, 'infrastructure:' . $self->{PROD_STATUS};
-    }
-    if ($self->{SCOPE}) {
-        push @tags, 'scope:*'.$self->{SCOPE}.'*';
-    }
-    if (@tags) {
-        $url .= '&tags='.join(',',@tags);
-    }
+
     my $req = HTTP::Request->new(GET => $url);
     $req->header('x-api-key' => $self->{TOKEN});
     $req->header('Accept' => 'application/json');
@@ -161,18 +148,8 @@ Module extracts list of sites from ARGO WEBAPI component.
 Creates new NCG::SiteSet::WEBAPI instance. Argument $options is hash
 reference that can contain following elements:
 
-    CERT_STATUS - certification status of site
+    FILTER - filter query that will be forwarded
     (default: )
-
-    PROD_STATUS - production status of site
-    (default: )
-
-    SCOPE - scope of sites
-    (default: )
-
-    TYPE - type of groups fetched from WEBAPI, EGI uses NGI,
-    most other tenants PROJECT
-    (default: NGI)
 
     TIMEOUT - HTTP timeout
     (default: DEFAULT_HTTP_TIMEOUT inherited from NCG)
