@@ -415,6 +415,7 @@ sub _setDefaultPorts {
     $self->{SITEDB}->globalAttribute("OPENWIRE_PORT", 6166);
     $self->{SITEDB}->globalAttribute("OPENWIRE_SSL_PORT", 6167);
     $self->{SITEDB}->globalAttribute("HTCondorCE_PORT", 9619);
+    $self->{SITEDB}->globalAttribute("CVMFS-Stratum-1_PORT", 8000);
 }
 
 # TODO:
