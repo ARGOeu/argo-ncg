@@ -99,6 +99,7 @@ $WLCG_NODETYPE->{internal}->{"NAGIOS"} = [
 'org.nagios.AmsDirSize', 
 'org.nagios.NagiosCmdFile',
 'argo.AMSPublisher-Check',
+'argo.poem-tools.check',
 ];
 
 $WLCG_NODETYPE->{internal}->{"MyProxy"} = [
