@@ -96,13 +96,15 @@ if [ -f /etc/init.d/ncg ] ; then
 fi
 
 %changelog
-* Thu Sep 01 2022 Emir Imamagic <eimamagi@srce.hr - 0.4.14-1
+* Mon Oct 03 2022 Emir Imamagic <eimamagi@srce.hr> - 0.4.15-1
 - Version bump
-* Thu Jan 20 2022 Emir Imamagic <eimamagi@srce.hr - 0.4.13-1
+* Thu Sep 01 2022 Emir Imamagic <eimamagi@srce.hr> - 0.4.14-1
 - Version bump
-* Mon Feb 1 2021 Emir Imamagic <eimamagi@srce.hr - 0.4.12-1
+* Thu Jan 20 2022 Emir Imamagic <eimamagi@srce.hr> - 0.4.13-1
 - Version bump
-* Fri May 8 2020 Emir Imamagic <eimamagi@srce.hr - 0.4.11-1
+* Mon Feb 1 2021 Emir Imamagic <eimamagi@srce.hr> - 0.4.12-1
+- Version bump
+* Fri May 8 2020 Emir Imamagic <eimamagi@srce.hr> - 0.4.11-1
 - Version bump
 * Fri Apr 10 2020 Emir Imamagic <eimamagi@srce.hr> - 0.4.10-1
 - Version bump
