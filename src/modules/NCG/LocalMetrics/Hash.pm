@@ -53,7 +53,7 @@ sub getData {
 
                 if ($self->{INCLUDE_IGTF_CHECKS} && $service eq 'NAGIOS') {
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'srce.cadist.check';
-                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'srce.cadist.getfiles';
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'srce.cadist.get-files';
                 }
                 if ($self->{INCLUDE_EGI_CHECKS} && $service eq 'NAGIOS') {
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'srce.nagios.good-ses';
