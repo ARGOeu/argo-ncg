@@ -93,7 +93,7 @@ sub getData {
 # Nagios internal checks profile
 $WLCG_NODETYPE->{internal}->{"NAGIOS"} = [
 'srce.certificate.validity-local',
-'generic.disk.usage',
+'generic.disk.usage-local',
 'generic.procs.crond',
 'generic.dirsize.ams-publisher', 
 'generic.file.nagios-cmd',
