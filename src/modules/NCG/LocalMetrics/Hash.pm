@@ -52,19 +52,19 @@ sub getData {
             if (exists $WLCG_NODETYPE->{$self->{PROFILE}}->{$service}) {
 
                 if ($self->{INCLUDE_IGTF_CHECKS} && $service eq 'NAGIOS') {
-                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.CADist-Check';
-                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.CADist-GetFiles';
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'srce.cadist.check';
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'srce.cadist.getfiles';
                 }
                 if ($self->{INCLUDE_EGI_CHECKS} && $service eq 'NAGIOS') {
-                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.GoodSEs';
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'srce.nagios.good-ses';
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'org.nordugrid.ARC-CE-monitor';
                     push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'org.nordugrid.ARC-CE-clean';
                 }
                 if ($self->{INCLUDE_PROXY_CHECKS} && $service eq 'NAGIOS') {
-                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.GridProxy-Valid';
-                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'hr.srce.GridProxy-Get';
-                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'argo.OIDC.RefreshToken';
-                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'argo.OIDC.CheckRefreshTokenValidity';
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'srce.gridproxy.validity';
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'srce.gridproxy.get';
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'argo.oidc.token-fetch';
+                    push @{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}, 'argo.oidc.refresh-token-validity';
                 }
 
                 foreach my $metric (@{$WLCG_NODETYPE->{$self->{PROFILE}}->{$service}}) {
@@ -92,7 +92,7 @@ sub getData {
 
 # Nagios internal checks profile
 $WLCG_NODETYPE->{internal}->{"NAGIOS"} = [
-'srce.certificate.validity',
+'srce.certificate.validity-local',
 'generic.disk.usage',
 'generic.procs.crond',
 'generic.dirsize.ams-publisher', 
