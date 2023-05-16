@@ -92,12 +92,12 @@ sub getData {
 
 # Nagios internal checks profile
 $WLCG_NODETYPE->{internal}->{"NAGIOS"} = [
-'hr.srce.CertLifetime-Local',
-'org.nagios.DiskCheck-Local',
-'org.nagios.ProcessCrond',
-'org.nagios.AmsDirSize', 
-'org.nagios.NagiosCmdFile',
-'argo.AMSPublisher-Check',
+'srce.certificate.validity',
+'generic.disk.usage',
+'generic.procs.crond',
+'generic.dirsize.ams-publisher', 
+'generic.file.nagios-cmd',
+'argo.ams-publisher.mon',
 'argo.poem-tools.check',
 ];
 
