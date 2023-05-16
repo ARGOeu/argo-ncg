@@ -1157,6 +1157,9 @@ sub _genServiceDependency {
     my $TEMPL;
     my $line;
 
+    # EMIR: 2023-05-16 remove dependencies
+    return 1;
+
     if (!open ($TEMPL, $self->{CONFIGURATION_TEMPLATES}->{SERVICES_SERVICEDEP})) {
         $self->error("Cannot open configuration file ".$self->{CONFIGURATION_TEMPLATES}->{SERVICES_SERVICEDEP}."!");
         return;
