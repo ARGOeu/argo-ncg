@@ -99,6 +99,7 @@ $WLCG_NODETYPE->{internal}->{"NAGIOS"} = [
 'generic.file.nagios-cmd',
 'argo.ams-publisher.mon',
 'argo.poem-tools.check',
+'argo.ncg.mon',
 ];
 
 $WLCG_NODETYPE->{internal}->{"MyProxy"} = [
