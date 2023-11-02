@@ -382,21 +382,6 @@ sub _analyzeURLs {
         $self->{SITEDB}->hostAttribute($hostname, 'BROKER_PORT', $cdmiurl->port);};
     }
 
-    if ($self->{SITEDB}->hasService($hostname, "webdav")) {
-        unless ($self->{SITEDB}->hostAttribute($hostname, "ARGO_WEBDAV_OPS_URL")) {
-            $self->{SITEDB}->hostAttribute($hostname, "ARGO_WEBDAV_OPS_URL", $self->{SITEDB}->hostAttribute($hostname, 'webdav_URL')); 
-        }
-    }
-    if ($self->{SITEDB}->hasService($hostname, "XRootD")) {
-        unless ($self->{SITEDB}->hostAttribute($hostname, "ARGO_XROOTD_OPS_URL")) {
-            if ( $attr = $self->{SITEDB}->hostAttribute($hostname, "XROOTD_URL") ) {
-                $self->{SITEDB}->hostAttribute($hostname, "ARGO_XROOTD_OPS_URL", $attr);
-            } else {
-                $self->{SITEDB}->hostAttribute($hostname, "ARGO_XROOTD_OPS_URL", $self->{SITEDB}->hostAttribute($hostname, 'XRootD_URL'));
-            }
-        }
-    }
-
 }
 
 sub _setDefaultPorts {
